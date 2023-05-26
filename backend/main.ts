@@ -15,60 +15,62 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// Oak is basically Express, but for Deno
 import * as path from "https://deno.land/std@0.189.0/path/mod.ts";
 import * as oak from "https://deno.land/x/oak@v12.5.0/mod.ts";
 import mongodb from "npm:mongodb";
 
-interface BishProduct {
-	sku: string,
+type DbClient = mongodb.MongoClient;
+type JsObject = Record<string, unknown>;
+type Base64String = string;
+type WebBase64<T extends string> = `data:${T};base64,${Base64String}`
+type WebImage = WebBase64<"image/png" | "image/jpeg">;
+type HexString = string;
+
+interface Product {
+	id: bigint,
+	seller: bigint, // seller ID
 	name: string,
-	picture: string, // data:image/png,base64
+	price: number, // euro cents
+	picture: Array<WebImage>
 }
 
-interface BishUserEncrypted {
+interface UserCommon {
 	name: string,
-	enc: string
-}
-
-interface BishUser {
-	name: string,
-	hash: string,
+	id: bigint, // assigned on registration
 	admin: boolean
 }
 
+interface UserEncrypted extends UserCommon {
+	enc: Base64String
+}
+
+interface User extends UserCommon {
+	hash: HexString,
+	joined: bigint,
+	picture: WebImage
+}
+
 interface BishContext extends oak.Context {
-	users?: mongodb.Collection<BishUserEncrypted>,
-	products?: mongodb.Collection<BishProduct>
+	users?: mongodb.Collection<UserEncrypted>,
+	products?: mongodb.Collection<Product>
 }
 
 interface Server extends oak.Application {
 	abortController: AbortController
 }
 
-// 2lazy2type
-type DbClient = mongodb.MongoClient;
-
 const DENO_DIR = path.dirname(path.fromFileUrl(Deno.mainModule));
 const DENO_HOST = "localhost";
 const DENO_PORT = 8443;
 const MONGO_PORT = 27017;
 const MONGO_URI = `mongodb://${DENO_HOST}:${MONGO_PORT}`;
-const FRONTEND_DIR = path.normalize(path.join(DENO_DIR, "../frontend"));
-
-Deno.chdir(DENO_DIR);
+const HOST_DIRS = ["html", "css", "assets"];
 
 const router = new oak.Router();
 
-router.post("/login", (ctx, next) => {
-	const bish = <BishContext>ctx;
-	console.log(bish.users);
-	console.log(bish.products);
-	next();
-});
-
 // weird event flippy-floppy. I dislike async stuff a lot
 function interrupt(mdb: DbClient, svr: Server) {
+	console.log("");
 	const closed = {
 		mongo: false,
 		svr: false
@@ -84,23 +86,22 @@ function interrupt(mdb: DbClient, svr: Server) {
 		console.log("MongoDB client closed");
 		if (closed.svr)
 			Deno.exit(0);
-
 	});
 	svr.abortController.abort();
 }
 
 function main(mdb: DbClient) {
 	console.log("MongoDB connected to", MONGO_URI);
-	const dbBish = mdb.db("lmaobish");
+	const dbBish = mdb.db("bishempty");
 	
 	const svr = <Server>new oak.Application();
 	svr.abortController = new AbortController();
 
 	// add mongodb collections to context
-	svr.use((ctx, next) => {
-		(<BishContext>ctx).users = dbBish.collection<BishUserEncrypted>("users");
-		(<BishContext>ctx).products = dbBish.collection<BishProduct>("products");
-		next();
+	svr.use(async (ctx, next) => {
+		(<BishContext>ctx).users = dbBish.collection<UserEncrypted>("users");
+		(<BishContext>ctx).products = dbBish.collection<Product>("products");
+		await next();
 	});
 	svr.use(router.routes());
 	svr.use(router.allowedMethods());
@@ -130,6 +131,40 @@ function listen() {
 		});
 }
 
-if (import.meta.main) {
-	listen();
+function serveJson(ctx: oak.Context, code: number, body: JsObject) {
+	ctx.response.type = "application/json";
+	ctx.response.status = code;
+	ctx.response.body = body;
 }
+
+function serveError(ctx: oak.Context, code: number, msg: string) {
+	console.log("Serving", code, msg);
+	serveJson(ctx, code, {
+		error: true,
+		message: msg
+	});
+}
+
+async function serveFileFrom(ctx: oak.Context, dir: string, file: string) {
+	console.log("Serving", file, "from", dir);
+	await oak.send(ctx, file, {
+		root: path.normalize(path.join(DENO_DIR, "..", dir))
+	});
+}
+
+Deno.chdir(DENO_DIR);
+
+router.get("/", async ctx =>
+	await serveFileFrom(ctx, HOST_DIRS[0], "index.html"));
+
+HOST_DIRS.forEach(dir => {
+	router.get(`/${dir}/:path`, async ctx =>
+		await serveFileFrom(ctx, dir, ctx.params.path));
+});
+
+router.post("/login", ctx => {
+	serveError(ctx, oak.Status.NotImplemented, "Login not implemented (soon!)");
+});
+
+if (import.meta.main)
+	listen();
