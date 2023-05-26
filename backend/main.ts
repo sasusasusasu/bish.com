@@ -19,6 +19,8 @@ import * as path from "https://deno.land/std@0.189.0/path/mod.ts";
 import * as oak from "https://deno.land/x/oak@v12.5.0/mod.ts";
 import mongodb from "npm:mongodb";
 
+import * as CryptoUtil from "../common/crypto_util.js";
+
 type DbClient = mongodb.MongoClient;
 type JsObject = Record<string, unknown>;
 type Base64String = string;
@@ -66,6 +68,7 @@ const MONGO_PORT = 27017;
 const MONGO_URI = `mongodb://${DENO_HOST}:${MONGO_PORT}`;
 const HOST_DIRS = ["html", "css", "assets"];
 
+const ecdh = new CryptoUtil.ECDH_AES();
 const router = new oak.Router();
 
 // weird event flippy-floppy. I dislike async stuff a lot
@@ -145,6 +148,14 @@ function serveError(ctx: oak.Context, code: number, msg: string) {
 	});
 }
 
+function checkKeys(ctx: oak.Context) {
+	if (!ecdh.keypairReady) {
+		serveError(ctx, 503, "ECDH keys not ready");
+		return false;
+	}
+	return true;
+}
+
 async function serveFileFrom(ctx: oak.Context, dir: string, file: string) {
 	console.log("Serving", file, "from", dir);
 	await oak.send(ctx, file, {
@@ -163,6 +174,8 @@ HOST_DIRS.forEach(dir => {
 });
 
 router.post("/login", ctx => {
+	if (!checkKeys(ctx))
+		return;
 	serveError(ctx, oak.Status.NotImplemented, "Login not implemented (soon!)");
 });
 
