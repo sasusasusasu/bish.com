@@ -48,7 +48,7 @@ export class AESMessage {
 			return new Uint8Array(v);
 		if (msg && typeof(v) === "string")
 			return new TextEncoder().encode(v);
-		throw new TypeError("Argument must be a string or Uint8Array compatible");
+		throw new TypeError("Argument must be a string or Uint8Array-like");
 	}
 	/**
 	 * Create an AESMessage object from an exported object
@@ -147,7 +147,8 @@ export class AES_GCM {
 	static async encrypt(key, msg, additional = null) {
 		const init = crypto.getRandomValues(new Uint8Array(12));
 		try {
-			var enc = await AES_GCM.#gcm(key, "encrypt", init, msg, additional);
+			var enc = await AES_GCM.#gcm(key, "encrypt",
+				init, msg, additional);
 		} catch(e) { return new AESMessage(true, e.message); }
 		return new AESMessage(false, init, new Uint8Array(enc));
 	}
@@ -161,7 +162,8 @@ export class AES_GCM {
 	 */
 	static async decrypt(key, msg, init, additional = null) {
 		try {
-			var dec = await AES_GCM.#gcm(key, "decrypt", init, msg, additional);
+			var dec = await AES_GCM.#gcm(key, "decrypt",
+				init, msg, additional);
 		} catch(e) { return new AESMessage(true, e.message); }
 		return new AESMessage(false, init, new Uint8Array(dec));
 	}
