@@ -93,6 +93,7 @@
     "https://deno.land/std@0.188.0/types.d.ts": "dbaeb2c4d7c526db9828fc8df89d8aecf53b9ced72e0c4568f97ddd8cda616a4",
     "https://deno.land/std@0.189.0/_util/asserts.ts": "178dfc49a464aee693a7e285567b3d0b555dc805ff490505a8aae34f9cfb1462",
     "https://deno.land/std@0.189.0/_util/os.ts": "d932f56d41e4f6a6093d56044e29ce637f8dcc43c5a90af43504a889cf1775e3",
+    "https://deno.land/std@0.189.0/encoding/hex.ts": "b4b1a7cb678745b0bf181ed8cf2498c7be00d121a7de244b752fbf9c7d9c48cd",
     "https://deno.land/std@0.189.0/path/_constants.ts": "e49961f6f4f48039c0dfed3c3f93e963ca3d92791c9d478ac5b43183413136e0",
     "https://deno.land/std@0.189.0/path/_interface.ts": "6471159dfbbc357e03882c2266d21ef9afdb1e4aa771b0545e90db58a0ba314b",
     "https://deno.land/std@0.189.0/path/_util.ts": "d7abb1e0dea065f427b89156e28cdeb32b045870acdf865833ba808a73b576d0",
@@ -129,13 +130,19 @@
     "https://deno.land/x/oak@v12.5.0/testing.ts": "37d684d57bb8e5150fb5eb2677e66b04dcb422709cf2c5a74c1df94d52aa02e2",
     "https://deno.land/x/oak@v12.5.0/types.d.ts": "bca5f38683ca2bb2b1ec841324a3c2e1c468e734151c9526af61c9257b016aca",
     "https://deno.land/x/oak@v12.5.0/util.ts": "0a3fdffb114859c2de84e1783efa3a544af4d2af8c6f08e0d25655de9d3e69bb",
-    "https://deno.land/x/path_to_regexp@v6.2.1/index.ts": "894060567837bae8fc9c5cbd4d0a05e9024672083d5883b525c031eea940e556"
+    "https://deno.land/x/path_to_regexp@v6.2.1/index.ts": "894060567837bae8fc9c5cbd4d0a05e9024672083d5883b525c031eea940e556",
+    "https://unpkg.com/@babel/standalone@7.22.2/babel.min.js": "405d1fb4413f56e087da9cc0c376d4d228d9832ab5e09a0a386d3b08372983c2"
   },
   "npm": {
     "specifiers": {
+      "@babel/standalone@7.22.2": "@babel/standalone@7.22.2",
       "mongodb": "mongodb@5.5.0"
     },
     "packages": {
+      "@babel/standalone@7.22.2": {
+        "integrity": "sha512-us2dNhs+YxbpIlTH84go6FuZxXQZSsCLAQgGCh8Czuubmk6bOz6Dipgo52NBt9VixeEpoVGZQU6NF6NYAIWX8g==",
+        "dependencies": {}
+      },
       "@types/node@20.2.3": {
         "integrity": "sha512-pg9d0yC4rVNWQzX8U7xb4olIOFuuVL9za3bzMT2pu2SU0SNEi66i2qrvhE2qt0HvkhuCaWJu7pLNOt/Pj8BIrw==",
         "dependencies": {}

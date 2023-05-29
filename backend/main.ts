@@ -19,6 +19,7 @@ import * as path from "https://deno.land/std@0.189.0/path/mod.ts";
 import * as oak from "https://deno.land/x/oak@v12.5.0/mod.ts";
 import mongodb from "npm:mongodb";
 
+import TranspilerCache from "./cache.ts";
 import * as CryptoUtil from "../common/crypto_util.js";
 
 type DbClient = mongodb.MongoClient;
@@ -68,6 +69,7 @@ const MONGO_PORT = 27017;
 const MONGO_URI = `mongodb://${DENO_HOST}:${MONGO_PORT}`;
 const HOST_DIRS = ["html", "css", "assets"];
 
+const cache = new TranspilerCache("cache");
 const ecdh = new CryptoUtil.ECDH_AES();
 const router = new oak.Router();
 
