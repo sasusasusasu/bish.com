@@ -5,7 +5,7 @@ import '../css/register.css'
 export default function Register(){
 
     return(
-        <div>
+        <div className='Main'>
             <img className="logo" src={Logo}/>
             <input className="lbl txtinp" id='Username' type="txt" placeholder="Username"/>
             <input className="lbl txtinp" id='Password' type="password" placeholder="Password"/>
