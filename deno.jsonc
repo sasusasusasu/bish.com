@@ -1,6 +1,6 @@
 {
 	"tasks": {
-		"dev": "deno run -A --watch main.ts"
+		"backend": "deno run -A --check backend/main.ts"
 	},
 	"lint": {
 		"rules": {
