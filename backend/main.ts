@@ -19,7 +19,7 @@ import * as path from "https://deno.land/std@0.189.0/path/mod.ts";
 import * as oak from "https://deno.land/x/oak@v12.5.0/mod.ts";
 import mongodb from "npm:mongodb";
 
-import TranspilerCache from "./cache.ts";
+import CachedTranspiler from "./transpiler.ts";
 import * as CryptoUtil from "../common/crypto_util.js";
 
 type DbClient = mongodb.MongoClient;
@@ -67,15 +67,18 @@ const DENO_HOST = "localhost";
 const DENO_PORT = 8443;
 const MONGO_PORT = 27017;
 const MONGO_URI = `mongodb://${DENO_HOST}:${MONGO_PORT}`;
+const ROOT_DIR = path.join(DENO_DIR, "..");
 const HOST_DIRS = ["html", "css", "assets"];
+const JSX_HOST_DIRS = [""]; // JSX DIRECTORIES HERE
 
-const cache = new TranspilerCache("cache");
+const tscache = new CachedTranspiler(path.join(DENO_DIR, "cache"), ROOT_DIR);
 const ecdh = new CryptoUtil.ECDH_AES();
 const router = new oak.Router();
 
 // weird event flippy-floppy. I dislike async stuff a lot
 function interrupt(mdb: DbClient, svr: Server) {
 	console.log("");
+	tscache.write();
 	const closed = {
 		mongo: false,
 		svr: false
@@ -152,7 +155,7 @@ function serveError(ctx: oak.Context, code: number, msg: string) {
 
 function checkKeys(ctx: oak.Context) {
 	if (!ecdh.keypairReady) {
-		serveError(ctx, 503, "ECDH keys not ready");
+		serveError(ctx, oak.Status.ServiceUnavailable, "ECDH keys not ready");
 		return false;
 	}
 	return true;
@@ -160,9 +163,7 @@ function checkKeys(ctx: oak.Context) {
 
 async function serveFileFrom(ctx: oak.Context, dir: string, file: string) {
 	console.log("Serving", file, "from", dir);
-	await oak.send(ctx, file, {
-		root: path.normalize(path.join(DENO_DIR, "..", dir))
-	});
+	await oak.send(ctx, file, { root: dir });
 }
 
 Deno.chdir(DENO_DIR);
@@ -175,10 +176,20 @@ HOST_DIRS.forEach(dir => {
 		await serveFileFrom(ctx, dir, ctx.params.path));
 });
 
+// TODO: clean this up so it's not potentially dangerous
+JSX_HOST_DIRS.forEach(dir => {
+	router.get(`/${dir}/:path`, async ctx =>
+		await serveFileFrom(ctx, DENO_DIR, 
+			(await tscache.transpile(path.join(
+				ROOT_DIR, dir, ctx.params.path) + "x"))
+					.slice(DENO_DIR.length + 1)));
+});
+
 router.post("/login", ctx => {
 	if (!checkKeys(ctx))
 		return;
-	serveError(ctx, oak.Status.NotImplemented, "Login not implemented (soon!)");
+	serveError(ctx, oak.Status.NotImplemented,
+		"Login not implemented (soon!)");
 });
 
 if (import.meta.main)

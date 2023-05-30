@@ -196,7 +196,7 @@ export class ECDH_AES {
 		this.keypairReady = false;
 		crypto.subtle.generateKey({
 			name: "ECDH",
-			namedCurve: "P-521"
+			namedCurve: "P-384" // Deno doesn't support P-521
 		}, false, ["deriveKey"]).then(kp => {
 			this.keypair = kp;
 			this.keypairReady = true;
