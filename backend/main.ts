@@ -28,6 +28,7 @@ type Base64String = string;
 type WebBase64<T extends string> = `data:${T};base64,${Base64String}`
 type WebImage = WebBase64<"image/png" | "image/jpeg">;
 type HexString = string;
+type JsxServeContext = oak.RouterContext<`/${string}/:path`>;
 
 interface Product {
 	id: bigint,
@@ -67,11 +68,14 @@ const DENO_HOST = "localhost";
 const DENO_PORT = 8443;
 const MONGO_PORT = 27017;
 const MONGO_URI = `mongodb://${DENO_HOST}:${MONGO_PORT}`;
-const ROOT_DIR = path.join(DENO_DIR, "..");
+const ROOT_DIR = path.resolve(DENO_DIR, "..");
 const HOST_DIRS = ["html", "css", "assets"];
 const JSX_HOST_DIRS = [""]; // JSX DIRECTORIES HERE
 
-const tscache = new CachedTranspiler(path.join(DENO_DIR, "cache"), ROOT_DIR);
+console.log("Bish.com backend starting from", DENO_DIR);
+Deno.chdir(DENO_DIR);
+
+const tscache = new CachedTranspiler("./cache", ROOT_DIR);
 const ecdh = new CryptoUtil.ECDH_AES();
 const router = new oak.Router();
 
@@ -166,7 +170,17 @@ async function serveFileFrom(ctx: oak.Context, dir: string, file: string) {
 	await oak.send(ctx, file, { root: dir });
 }
 
-Deno.chdir(DENO_DIR);
+async function serveJSX(ctx: JsxServeContext, dir: string) {
+	const ext = ctx.params.path.split(".").at(-1);
+	const prel = path.join(dir, ctx.params.path);
+	const pabs = path.join(ROOT_DIR, prel);
+	if (ext === "js") {
+		await serveFileFrom(<oak.Context>ctx, DENO_DIR,
+			await tscache.transpile(pabs + "x"));
+		return;
+	}
+	await serveFileFrom(<oak.Context>ctx, ROOT_DIR, prel);
+}
 
 router.get("/", async ctx =>
 	await serveFileFrom(ctx, HOST_DIRS[0], "index.html"));
@@ -176,13 +190,9 @@ HOST_DIRS.forEach(dir => {
 		await serveFileFrom(ctx, dir, ctx.params.path));
 });
 
-// TODO: clean this up so it's not potentially dangerous
 JSX_HOST_DIRS.forEach(dir => {
 	router.get(`/${dir}/:path`, async ctx =>
-		await serveFileFrom(ctx, DENO_DIR, 
-			(await tscache.transpile(path.join(
-				ROOT_DIR, dir, ctx.params.path) + "x"))
-					.slice(DENO_DIR.length + 1)));
+		await serveJSX(ctx, dir));
 });
 
 router.post("/login", ctx => {
