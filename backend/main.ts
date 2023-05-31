@@ -20,6 +20,7 @@ import * as oak from "https://deno.land/x/oak@v12.5.0/mod.ts";
 import mongodb from "npm:mongodb";
 
 import CachedTranspiler from "./transpiler.ts";
+import * as Safe from "./safe.ts";
 import * as CryptoUtil from "../common/crypto_util.js";
 
 type DbClient = mongodb.MongoClient;
@@ -63,21 +64,25 @@ interface Server extends oak.Application {
 	abortController: AbortController
 }
 
+const LOG_INIT = "[Main]";
 const DENO_DIR = path.dirname(path.fromFileUrl(Deno.mainModule));
 const DENO_HOST = "localhost";
 const DENO_PORT = 8443;
 const MONGO_PORT = 27017;
 const MONGO_URI = `mongodb://${DENO_HOST}:${MONGO_PORT}`;
 const ROOT_DIR = path.resolve(DENO_DIR, "..");
-const HOST_DIRS = ["html", "css", "assets"];
-const JSX_HOST_DIRS = [""]; // JSX DIRECTORIES HERE
+const HOST_DIRS = ["html", "css", "assets", "jsxtest"];
 
-console.log("Bish.com backend starting from", DENO_DIR);
+console.log(LOG_INIT, "Starting from", DENO_DIR);
 Deno.chdir(DENO_DIR);
 
 const tscache = new CachedTranspiler("./cache", ROOT_DIR);
 const ecdh = new CryptoUtil.ECDH_AES();
 const router = new oak.Router();
+
+function logComponent(c: string) {
+	return LOG_INIT.slice(0, -1) + `/${c}]`;
+}
 
 // weird event flippy-floppy. I dislike async stuff a lot
 function interrupt(mdb: DbClient, svr: Server) {
@@ -89,13 +94,13 @@ function interrupt(mdb: DbClient, svr: Server) {
 	};
 	svr.addEventListener("close", () => {
 		closed.svr = true;
-		console.log("HTTPS server closed");
+		console.log(logComponent("Network"), "HTTPS server closed");
 		if (closed.mongo)
 			Deno.exit(0);
 	});
 	mdb.close().then(() => {
 		closed.mongo = true;
-		console.log("MongoDB client closed");
+		console.log(logComponent("Network"), "MongoDB client closed");
 		if (closed.svr)
 			Deno.exit(0);
 	});
@@ -103,7 +108,7 @@ function interrupt(mdb: DbClient, svr: Server) {
 }
 
 function main(mdb: DbClient) {
-	console.log("MongoDB connected to", MONGO_URI);
+	console.log(logComponent("Network"), "MongoDB connected to", MONGO_URI);
 	const dbBish = mdb.db("bishempty");
 	
 	const svr = <Server>new oak.Application();
@@ -119,7 +124,8 @@ function main(mdb: DbClient) {
 	svr.use(router.allowedMethods());
 
 	svr.addEventListener("listen", () => {
-		console.log(`HTTPS server listening on ${DENO_HOST}:${DENO_PORT}`);
+		console.log(logComponent("Network"),
+			`HTTPS server listening on ${DENO_HOST}:${DENO_PORT}`);
 		Deno.addSignalListener("SIGINT", () => interrupt(mdb, svr));
 		Deno.addSignalListener("SIGTERM", () => interrupt(mdb, svr));
 	});
@@ -138,7 +144,8 @@ function main(mdb: DbClient) {
 function listen() {
 	mongodb.MongoClient.connect(MONGO_URI)
 		.then((conn: DbClient) => main(conn), (e: Error) => {
-			console.log("MongoDB connection failed:", e.message);	
+			console.log(logComponent("Network"),
+				"MongoDB connection failed:", e.message);	
 			Deno.exit(1);
 		});
 }
@@ -150,7 +157,7 @@ function serveJson(ctx: oak.Context, code: number, body: JsObject) {
 }
 
 function serveError(ctx: oak.Context, code: number, msg: string) {
-	console.log("Serving", code, msg);
+	console.log(logComponent("Routing"), "Serving", code, msg);
 	serveJson(ctx, code, {
 		error: true,
 		message: msg
@@ -166,15 +173,21 @@ function checkKeys(ctx: oak.Context) {
 }
 
 async function serveFileFrom(ctx: oak.Context, dir: string, file: string) {
-	console.log("Serving", file, "from", dir);
+	console.log(logComponent("Routing"), "Serving", file, "from", dir);
 	await oak.send(ctx, file, { root: dir });
 }
 
-async function serveJSX(ctx: JsxServeContext, dir: string) {
+async function serveFileRequest(ctx: JsxServeContext, dir: string) {
 	const ext = ctx.params.path.split(".").at(-1);
 	const prel = path.join(dir, ctx.params.path);
 	const pabs = path.join(ROOT_DIR, prel);
-	if (ext === "js") {
+	/* process JSX and serve the output from the transpiler cache
+	 * if the path extension is .js and the corresponding .jsx file
+	 * exists locally
+	 */
+	if (ext === "js" && Safe.stat(pabs + "x").isFile) {
+		console.log(logComponent("Routing"), "Processing request for",
+			prel, "as JSX");
 		await serveFileFrom(<oak.Context>ctx, DENO_DIR,
 			await tscache.transpile(pabs + "x"));
 		return;
@@ -182,17 +195,9 @@ async function serveJSX(ctx: JsxServeContext, dir: string) {
 	await serveFileFrom(<oak.Context>ctx, ROOT_DIR, prel);
 }
 
-router.get("/", async ctx =>
-	await serveFileFrom(ctx, HOST_DIRS[0], "index.html"));
-
 HOST_DIRS.forEach(dir => {
 	router.get(`/${dir}/:path`, async ctx =>
-		await serveFileFrom(ctx, dir, ctx.params.path));
-});
-
-JSX_HOST_DIRS.forEach(dir => {
-	router.get(`/${dir}/:path`, async ctx =>
-		await serveJSX(ctx, dir));
+		await serveFileRequest(ctx, dir));
 });
 
 router.post("/login", ctx => {
