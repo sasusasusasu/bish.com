@@ -22,6 +22,7 @@ import mongodb from "npm:mongodb";
 import CachedTranspiler from "./transpiler.ts";
 import * as Safe from "./safe.ts";
 import * as CryptoUtil from "../common/crypto_util.js";
+import Logger from "../common/logger.js";
 
 type DbClient = mongodb.MongoClient;
 type JsObject = Record<string, unknown>;
@@ -64,7 +65,6 @@ interface Server extends oak.Application {
 	abortController: AbortController
 }
 
-const LOG_INIT = "[Main]";
 const DENO_DIR = path.dirname(path.fromFileUrl(Deno.mainModule));
 const DENO_HOST = "localhost";
 const DENO_PORT = 8443;
@@ -73,16 +73,19 @@ const MONGO_URI = `mongodb://${DENO_HOST}:${MONGO_PORT}`;
 const ROOT_DIR = path.resolve(DENO_DIR, "..");
 const HOST_DIRS = ["html", "css", "assets", "jsxtest"];
 
-console.log(LOG_INIT, "Starting from", DENO_DIR);
 Deno.chdir(DENO_DIR);
 
+const logger = new Logger("Main");
+const loggerNet = logger.component("Network");
+const loggerRoute = logger.component("Routing");
+const certKey = Deno.readTextFileSync("./tls/ckey.pem");
+const certChain = Deno.readTextFileSync("./tls/cert.pem")
+	+ Deno.readTextFileSync("./tls/root.pem");
 const tscache = new CachedTranspiler("./cache", ROOT_DIR);
 const ecdh = new CryptoUtil.ECDH_AES();
 const router = new oak.Router();
 
-function logComponent(c: string) {
-	return LOG_INIT.slice(0, -1) + `/${c}]`;
-}
+logger.log("Starting from", DENO_DIR);
 
 // weird event flippy-floppy. I dislike async stuff a lot
 function interrupt(mdb: DbClient, svr: Server) {
@@ -94,13 +97,13 @@ function interrupt(mdb: DbClient, svr: Server) {
 	};
 	svr.addEventListener("close", () => {
 		closed.svr = true;
-		console.log(logComponent("Network"), "HTTPS server closed");
+		loggerNet.log("HTTPS server closed");
 		if (closed.mongo)
 			Deno.exit(0);
 	});
 	mdb.close().then(() => {
 		closed.mongo = true;
-		console.log(logComponent("Network"), "MongoDB client closed");
+		loggerNet.log("MongoDB client closed");
 		if (closed.svr)
 			Deno.exit(0);
 	});
@@ -108,7 +111,7 @@ function interrupt(mdb: DbClient, svr: Server) {
 }
 
 function main(mdb: DbClient) {
-	console.log(logComponent("Network"), "MongoDB connected to", MONGO_URI);
+	loggerNet.log("MongoDB connected to", MONGO_URI);
 	const dbBish = mdb.db("bishempty");
 	
 	const svr = <Server>new oak.Application();
@@ -124,28 +127,33 @@ function main(mdb: DbClient) {
 	svr.use(router.allowedMethods());
 
 	svr.addEventListener("listen", () => {
-		console.log(logComponent("Network"),
-			`HTTPS server listening on ${DENO_HOST}:${DENO_PORT}`);
+		loggerNet.log(`HTTPS server listening on ${DENO_HOST}:${DENO_PORT}`);
 		Deno.addSignalListener("SIGINT", () => interrupt(mdb, svr));
 		Deno.addSignalListener("SIGTERM", () => interrupt(mdb, svr));
 	});
 
-	svr.listen({
-		secure: true,
-		hostname: DENO_HOST,
-		port: DENO_PORT,
-		cert: Deno.readTextFileSync("./tls/cert.pem")
-			+ Deno.readTextFileSync("./tls/root.pem"),
-		key: Deno.readTextFileSync("./tls/ckey.pem"),
-		signal: svr.abortController.signal
-	});
+	try {
+		svr.listen({
+			secure: true,
+			hostname: DENO_HOST,
+			port: DENO_PORT,
+			cert: certChain,
+			key: certKey,
+			signal: svr.abortController.signal
+		});
+	} catch(e) {
+		loggerNet.error("HTTPS server setup failed:", e.message);
+		mdb.close().then(() => {
+			loggerNet.log("MongoDB client closed");
+			Deno.exit(1);
+		});
+	}
 }
 
 function listen() {
 	mongodb.MongoClient.connect(MONGO_URI)
 		.then((conn: DbClient) => main(conn), (e: Error) => {
-			console.log(logComponent("Network"),
-				"MongoDB connection failed:", e.message);	
+			loggerNet.error("MongoDB connection failed:", e.message);	
 			Deno.exit(1);
 		});
 }
@@ -157,7 +165,7 @@ function serveJson(ctx: oak.Context, code: number, body: JsObject) {
 }
 
 function serveError(ctx: oak.Context, code: number, msg: string) {
-	console.log(logComponent("Routing"), "Serving", code, msg);
+	loggerRoute.info("Serving HTTP error", code, msg);
 	serveJson(ctx, code, {
 		error: true,
 		message: msg
@@ -173,7 +181,7 @@ function checkKeys(ctx: oak.Context) {
 }
 
 async function serveFileFrom(ctx: oak.Context, dir: string, file: string) {
-	console.log(logComponent("Routing"), "Serving", file, "from", dir);
+	loggerRoute.log("Serving", file, "from", dir);
 	await oak.send(ctx, file, { root: dir });
 }
 
@@ -186,8 +194,7 @@ async function serveFileRequest(ctx: JsxServeContext, dir: string) {
 	 * exists locally
 	 */
 	if (ext === "js" && Safe.stat(pabs + "x").isFile) {
-		console.log(logComponent("Routing"), "Processing request for",
-			prel, "as JSX");
+		loggerRoute.log("Processing request for", prel, "as JSX");
 		await serveFileFrom(<oak.Context>ctx, DENO_DIR,
 			await tscache.transpile(pabs + "x"));
 		return;
