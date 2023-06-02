@@ -1,0 +1,42 @@
+*{
+    margin:0;
+    padding:0;
+    background-color:rgb(15, 21, 34);
+    font-family:'Arimo', sans-serif;
+}
+
+body{
+    width:100vw;
+    height:100vh;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#Products-Container{
+    padding:10px;
+    height:auto;
+    gap:20px;
+    width:95vw;
+    background-color:rgb(24, 34, 54);
+    border-radius:10px;
+    display:flex;
+    flex-direction:row;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-around;
+}
+
+.Item{
+    aspect-ratio:1/1;
+    width:10%;
+    height:auto;
+    background-color:rgb(32, 46, 73);
+    transition:all 0.25s;
+}
+
+.Item:hover{
+    cursor:pointer;
+    transition:all 0.25s;
+    background-color:rgb(44, 62, 99);
+}
