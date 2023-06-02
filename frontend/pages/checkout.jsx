@@ -1,5 +1,6 @@
 import React from 'react'
 import Logo from '../../assets/bish.png'
+import Item from '../components/item'
 import '../css/checkout.css'
 
 export default function Checkout(){
