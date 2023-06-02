@@ -20,50 +20,10 @@ import * as oak from "https://deno.land/x/oak@v12.5.0/mod.ts";
 import mongodb from "npm:mongodb";
 
 import CachedTranspiler from "./transpiler.ts";
-import * as Safe from "./safe.ts";
-import * as CryptoUtil from "../common/crypto_util.js";
 import Logger from "../common/logger.js";
-
-type DbClient = mongodb.MongoClient;
-type JsObject = Record<string, unknown>;
-type Base64String = string;
-type WebBase64<T extends string> = `data:${T};base64,${Base64String}`
-type WebImage = WebBase64<"image/png" | "image/jpeg">;
-type HexString = string;
-type JsxServeContext = oak.RouterContext<`/${string}/:path`>;
-
-interface Product {
-	id: bigint,
-	seller: bigint, // seller ID
-	name: string,
-	price: number, // euro cents
-	picture: Array<WebImage>
-}
-
-interface UserCommon {
-	name: string,
-	id: bigint, // assigned on registration
-	admin: boolean
-}
-
-interface UserEncrypted extends UserCommon {
-	enc: Base64String
-}
-
-interface User extends UserCommon {
-	hash: HexString,
-	joined: bigint,
-	picture: WebImage
-}
-
-interface BishContext extends oak.Context {
-	users?: mongodb.Collection<UserEncrypted>,
-	products?: mongodb.Collection<Product>
-}
-
-interface Server extends oak.Application {
-	abortController: AbortController
-}
+import * as Safe from "./safe.ts";
+import * as Types from "./types.ts";
+import * as CryptoUtil from "../common/crypto_util.js";
 
 const DENO_DIR = path.dirname(path.fromFileUrl(Deno.mainModule));
 const DENO_HOST = "localhost";

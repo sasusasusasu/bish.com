@@ -22,11 +22,6 @@ import * as Safe from "./safe.ts";
 import * as CryptoUtil from "../common/crypto_util.js";
 import Logger from "../common/logger.js";
 
-async function sha256(data: string): Promise<string> {
-	return CryptoUtil.hex(await crypto.subtle.digest(
-		"SHA-256", new TextEncoder().encode(data)));
-}
-
 export default class CachedTranspiler {
 	#logger: Logger;
 	cacheDir: string;
@@ -73,7 +68,7 @@ export default class CachedTranspiler {
 	async transpile(input: string): Promise<string> {
 		const output = this.#cachifyPath(input);
 		const code = Deno.readTextFileSync(input);
-		const hash = await sha256(code);
+		const hash = await CryptoUtil.sha256str(code);
 		if (this.literallyHashMap[input] === hash) {
 			this.#logger.log("Cache hit:", input, "->", output);
 			return output;

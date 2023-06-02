@@ -40,6 +40,28 @@ export function unhex(str) {
 		}));
 }
 
+export function base64(arr) {
+	const a = (arr instanceof Uint8Array) ? arr : new Uint8Array(arr);
+	return btoa(new TextDecoder().decode(a));
+}
+
+export function unbase64(str) {
+	const s = String(str);
+	return new TextEncoder().encode(atob(s));
+}
+
+export async function sha256(data) {
+	return hex(await crypto.subtle.digest("SHA-256", data));
+}
+
+export async function sha256str(str) {
+	return await sha256(new TextEncoder().encode(str));
+}
+
+export async function sha256hex(hex) {
+	return await sha256(unhex(hex));
+}
+
 export class AESMessage {
 	static #sanitize(v, msg = false) {
 		if (v instanceof Uint8Array)
@@ -59,7 +81,7 @@ export class AESMessage {
 			return new AESMessage(true, "Invalid message object");
 		if (obj.error)
 			return new AESMessage(obj.error, obj.errorMsg);
-		return new AESMessage(obj.error, unhex(obj.iv), unhex(obj.message));
+		return new AESMessage(obj.error, unhex(obj.iv), unbase64(obj.message));
 	}
 
 	constructor(error) {
@@ -107,6 +129,12 @@ export class AESMessage {
 		return hex(this.message);
 	}
 
+	base64() {
+		if (this.error)
+			return;
+		return base64(this.message);
+	}
+
 	/**
 	 * Create an export of this AESMessage object
 	 */
@@ -116,7 +144,7 @@ export class AESMessage {
 			error: this.error,
 			errorMsg: this.errorMsg,
 			iv: hex(this.iv),
-			message: hex(this.message)
+			message: base64(this.message)
 		}
 	}
 
@@ -188,7 +216,7 @@ export class ECDH_AES {
 	static #import(raw) {
 		return crypto.subtle.importKey("raw", raw, {
 			name: "ECDH",
-			namedCurve: "P-521"
+			namedCurve: "P-384"
 		}, true, []);
 	}
 
