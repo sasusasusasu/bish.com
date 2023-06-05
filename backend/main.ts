@@ -73,7 +73,7 @@ function interrupt(mdb: Types.DbClient, svr: Types.Server) {
 }
 
 async function serveFileFrom(ctx: oak.Context, dir: string, file: string) {
-	loggerRoute.log("Serving", file, "from", dir);
+	loggerFile.log("Serving", file, "from", dir);
 	await oak.send(ctx, file, { root: dir });
 }
 
@@ -92,7 +92,6 @@ async function serveFileRequest(ctx: oak.Context, next: oak.Next) {
 	 * exists locally
 	 */
 	if (ext === "js" && Safe.stat(pabs + "x").isFile) {
-		loggerFile.log("JSX match:", prel);
 		await serveFileFrom(ctx, DENO_DIR,
 			await tscache.transpile(pabs + "x"));
 		return;
