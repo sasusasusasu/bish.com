@@ -48,7 +48,7 @@ const router = new oak.Router();
 logger.log("Starting from", DENO_DIR);
 
 // weird event flippy-floppy. I dislike async stuff a lot
-function interrupt(mdb: DbClient, svr: Server) {
+function interrupt(mdb: Types.DbClient, svr: Types.Server) {
 	console.log("");
 	tscache.write();
 	const closed = {
@@ -70,17 +70,17 @@ function interrupt(mdb: DbClient, svr: Server) {
 	svr.abortController.abort();
 }
 
-function main(mdb: DbClient) {
+function main(mdb: Types.DbClient) {
 	loggerNet.log("MongoDB connected to", MONGO_URI);
 	const dbBish = mdb.db("bishempty");
 	
-	const svr = <Server>new oak.Application();
+	const svr = <Types.Server>new oak.Application();
 	svr.abortController = new AbortController();
 
 	// add mongodb collections to context
 	svr.use(async (ctx, next) => {
-		(<BishContext>ctx).users = dbBish.collection<UserEncrypted>("users");
-		(<BishContext>ctx).products = dbBish.collection<Product>("products");
+		(<Types.BishContext>ctx).users = dbBish.collection<Types.UserEncrypted>("users");
+		(<Types.BishContext>ctx).products = dbBish.collection<Types.Product>("products");
 		await next();
 	});
 	svr.use(router.routes());
@@ -112,13 +112,13 @@ function main(mdb: DbClient) {
 
 function listen() {
 	mongodb.MongoClient.connect(MONGO_URI)
-		.then((conn: DbClient) => main(conn), (e: Error) => {
+		.then((conn: Types.DbClient) => main(conn), (e: Error) => {
 			loggerNet.error("MongoDB connection failed:", e.message);	
 			Deno.exit(1);
 		});
 }
 
-function serveJson(ctx: oak.Context, code: number, body: JsObject) {
+function serveJson(ctx: oak.Context, code: number, body: Types.JsObject) {
 	ctx.response.type = "application/json";
 	ctx.response.status = code;
 	ctx.response.body = body;
@@ -145,7 +145,7 @@ async function serveFileFrom(ctx: oak.Context, dir: string, file: string) {
 	await oak.send(ctx, file, { root: dir });
 }
 
-async function serveFileRequest(ctx: JsxServeContext, dir: string) {
+async function serveFileRequest(ctx: Types.JsxServeContext, dir: string) {
 	const ext = ctx.params.path.split(".").at(-1);
 	const prel = path.join(dir, ctx.params.path);
 	const pabs = path.join(ROOT_DIR, prel);
