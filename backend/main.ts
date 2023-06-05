@@ -21,6 +21,7 @@ import mongodb from "npm:mongodb";
 
 import CachedTranspiler from "./transpiler.ts";
 import Logger from "../common/logger.js";
+import * as Util from "./util.ts";
 import * as Safe from "./safe.ts";
 import * as Types from "./types.ts";
 import * as CryptoUtil from "../common/crypto_util.js";
@@ -31,13 +32,14 @@ const DENO_PORT = 8443;
 const MONGO_PORT = 27017;
 const MONGO_URI = `mongodb://${DENO_HOST}:${MONGO_PORT}`;
 const ROOT_DIR = path.resolve(DENO_DIR, "..");
-const HOST_DIRS = ["html", "css", "assets", "jsxtest"];
+const HOST_DIRS = ["common", "assets", "frontend"];
 
 Deno.chdir(DENO_DIR);
 
 const logger = new Logger("Main");
 const loggerNet = logger.component("Network");
 const loggerRoute = logger.component("Routing");
+const loggerFile = logger.component("ServeFile");
 const certKey = Deno.readTextFileSync("./tls/ckey.pem");
 const certChain = Deno.readTextFileSync("./tls/cert.pem")
 	+ Deno.readTextFileSync("./tls/root.pem");
@@ -70,6 +72,37 @@ function interrupt(mdb: Types.DbClient, svr: Types.Server) {
 	svr.abortController.abort();
 }
 
+async function serveFileFrom(ctx: oak.Context, dir: string, file: string) {
+	loggerRoute.log("Serving", file, "from", dir);
+	await oak.send(ctx, file, { root: dir });
+}
+
+async function serveFileRequest(ctx: oak.Context, next: oak.Next) {
+	if (ctx.request.method !== "GET")
+		return next();
+	const prel = ctx.request.url.pathname;
+	const pabs = path.join(ROOT_DIR, prel);
+	const ext = prel.split(".").at(-1);
+	if (!HOST_DIRS.includes(Util.splitPath(prel)[0])) {
+		loggerFile.log("Not included in host dirs:", prel);
+		return next();
+	}
+	/* process JSX and serve the output from the transpiler cache
+	 * if the path extension is .js and the corresponding .jsx file
+	 * exists locally
+	 */
+	if (ext === "js" && Safe.stat(pabs + "x").isFile) {
+		loggerFile.log("JSX match:", prel);
+		await serveFileFrom(ctx, DENO_DIR,
+			await tscache.transpile(pabs + "x"));
+		return;
+	}
+	if (Safe.stat(pabs).isFile)
+		return serveFileFrom(ctx, ROOT_DIR, prel);
+	loggerFile.log("Not serving", prel);
+	return next();
+}
+
 function main(mdb: Types.DbClient) {
 	loggerNet.log("MongoDB connected to", MONGO_URI);
 	const dbBish = mdb.db("bishempty");
@@ -78,13 +111,16 @@ function main(mdb: Types.DbClient) {
 	svr.abortController = new AbortController();
 
 	// add mongodb collections to context
-	svr.use(async (ctx, next) => {
-		(<Types.BishContext>ctx).users = dbBish.collection<Types.UserEncrypted>("users");
-		(<Types.BishContext>ctx).products = dbBish.collection<Types.Product>("products");
-		await next();
+	svr.use((ctx, next) => {
+		(<Types.BishContext>ctx).users =
+			dbBish.collection<Types.UserEncrypted>("users");
+		(<Types.BishContext>ctx).products =
+			dbBish.collection<Types.Product>("products");
+		return next();
 	});
 	svr.use(router.routes());
 	svr.use(router.allowedMethods());
+	svr.use(serveFileRequest);
 
 	svr.addEventListener("listen", () => {
 		loggerNet.log(`HTTPS server listening on ${DENO_HOST}:${DENO_PORT}`);
@@ -140,31 +176,8 @@ function checkKeys(ctx: oak.Context) {
 	return true;
 }
 
-async function serveFileFrom(ctx: oak.Context, dir: string, file: string) {
-	loggerRoute.log("Serving", file, "from", dir);
-	await oak.send(ctx, file, { root: dir });
-}
-
-async function serveFileRequest(ctx: Types.JsxServeContext, dir: string) {
-	const ext = ctx.params.path.split(".").at(-1);
-	const prel = path.join(dir, ctx.params.path);
-	const pabs = path.join(ROOT_DIR, prel);
-	/* process JSX and serve the output from the transpiler cache
-	 * if the path extension is .js and the corresponding .jsx file
-	 * exists locally
-	 */
-	if (ext === "js" && Safe.stat(pabs + "x").isFile) {
-		loggerRoute.log("Processing request for", prel, "as JSX");
-		await serveFileFrom(<oak.Context>ctx, DENO_DIR,
-			await tscache.transpile(pabs + "x"));
-		return;
-	}
-	await serveFileFrom(<oak.Context>ctx, ROOT_DIR, prel);
-}
-
-HOST_DIRS.forEach(dir => {
-	router.get(`/${dir}/:path`, async ctx =>
-		await serveFileRequest(ctx, dir));
+router.get("/", ctx => {
+	ctx.response.redirect("/frontend/html/index.html");
 });
 
 router.post("/login", ctx => {

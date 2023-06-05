@@ -1,12 +1,10 @@
-import React from 'react'
-import Logo from '../../assets/bish.png'
-import '../css/register.css'
+import * as React from "https://esm.sh/preact";
 
 export default function Register(){
 
     return(
         <div>
-            <img className="logo" src={Logo}/>
+            <img className="logo" src="../../assets/bish.png"/>
             <input className="lbl txtinp" id='Username' type="txt" placeholder="Username"/>
             <input className="lbl txtinp" id='Password' type="password" placeholder="Password"/>
             <button id="Register" className="reg">Create Account</button>

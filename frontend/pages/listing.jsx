@@ -1,11 +1,9 @@
-import React from 'react'
-import Logo from '../assets/bish.png'
-import '../css/listing.css'
+import * as React from "https://esm.sh/preact";
 
 export default function Listing(){
     return(
         <div id='Listing'>
-            <img id='Logo' src={Logo}/>
+            <img id='Logo' src="../../assets/bish.png"/>
             <h1>Product Listing</h1>
             <div id='Listing-Info'>
                 <div className='Info-Container'>

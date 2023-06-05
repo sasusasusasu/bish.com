@@ -1,7 +1,5 @@
-import React from 'react'
-import Logo from '../assets/bish.png'
-import Product from '../components/product'
-import '../css/products.css'
+import * as React from "https://esm.sh/preact";
+import Product from '../components/product.js'
 
 export default function Products(){
     return(

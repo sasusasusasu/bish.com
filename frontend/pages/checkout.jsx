@@ -1,14 +1,12 @@
-import React from 'react'
-import Logo from '../../assets/bish.png'
-import Item from '../components/item'
-import '../css/checkout.css'
+import * as React from "https://esm.sh/preact";
+import Item from '../components/item.js'
 
 export default function Checkout(){
 
     return(
         <div className="Main">
             <div className="Top">
-                <img className="logo" src={Logo}/>
+                <img className="logo" src="../../assets/bish.png"/>
                 <h1 className="Title">Checkout</h1>
             </div>
             <p className="IIYC">Items in Your Cart</p>
