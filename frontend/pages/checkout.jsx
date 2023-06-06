@@ -29,7 +29,7 @@ export default function Checkout(){
             </div>
             <p className="IIYC">Items in Your Cart</p>
             <div className="Items">
-                {ItemElements}
+                {items.length > 0 ? ItemElements : <p className='IIYC'>Your cart is empty!</p>}
             </div>
             <div className="Checkout-Info">
                 <p id="Total">Total Price: <span className="Total">{Total}€</span></p>
