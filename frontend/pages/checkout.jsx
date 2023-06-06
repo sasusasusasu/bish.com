@@ -17,6 +17,7 @@ export default function Checkout(){
         setItems(old => {
             return old.filter(item => item.id !== id)
         })
+        GetTotal()
     }
 
     const ItemElements = items.map(item => <Item value={item.value} name={item.name} pic={item.pic} key={item.id} desc={item.desc} delete={()=>DeleteItem(item.id)}/>)
