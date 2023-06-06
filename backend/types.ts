@@ -7,18 +7,27 @@ export type Base64String = string;
 export type UUID = string;
 export type Serial = bigint;
 export type SerialString = string;
-export type Timestamp = bigint;
+export type Timestamp = number;
 export type WebBase64<T extends string> = `data:${T};base64,${Base64String}`;
 export type WebImage = WebBase64<"image/png" | "image/jpeg">;
 export type HexString = string;
 export type JsxServeContext = oak.RouterContext<`/${string}/:path`>;
+
+export enum SessionState {
+	INVALID = 0,
+	KEYS_READY = 1,
+	LOGGED_IN = 2
+}
 
 export interface Product {
 	id: Serial,
 	seller: UUID, // seller user ID
 	name: string,
 	price: number, // euro cents
-	picture: Array<WebImage>
+	available: number, // how many items are available; -1 for infinite
+	added: Timestamp,
+	updated: Timestamp,
+	pictures: Array<WebImage>,
 }
 
 export interface UserCommon {
@@ -33,10 +42,19 @@ export interface UserEncrypted extends UserCommon {
 }
 
 export interface User extends UserCommon {
-	hash: HexString,
 	joined: Timestamp,
+	updated: Timestamp,
 	picture: WebImage,
-	cart: Array<Record<SerialString, number>>
+	cart: Array<Record<SerialString, number>>,
+	listings: Array<Product>
+}
+
+export interface ProductExport extends Omit<Product, "id"> {
+	id: SerialString
+}
+
+export interface UserExport extends Omit<User, "listings"> {
+	listings: Array<ProductExport>
 }
 
 export interface BishContext extends oak.Context {
@@ -46,4 +64,14 @@ export interface BishContext extends oak.Context {
 
 export interface Server extends oak.Application {
 	abortController: AbortController
+}
+
+export function exportProduct(product: Product): ProductExport {
+	return <ProductExport> { ...product, id: String(product.id) };
+}
+
+export function exportUser(user: User): UserExport {
+	return <UserExport> { ...user,
+		listings: user.listings.map(l => exportProduct(l))
+	};
 }

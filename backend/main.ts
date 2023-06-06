@@ -20,6 +20,7 @@ import * as oak from "https://deno.land/x/oak@v12.5.0/mod.ts";
 import mongodb from "npm:mongodb";
 
 import CachedTranspiler from "./transpiler.ts";
+import Session from "./session.ts";
 import Logger from "../common/logger.js";
 import * as Util from "./util.ts";
 import * as Safe from "./safe.ts";
@@ -40,12 +41,14 @@ const logger = new Logger("Main");
 const loggerNet = logger.component("Network");
 const loggerRoute = logger.component("Routing");
 const loggerFile = logger.component("ServeFile");
+const loggerAuth = logger.component("UserAuth");
 const certKey = Deno.readTextFileSync("./tls/ckey.pem");
 const certChain = Deno.readTextFileSync("./tls/cert.pem")
 	+ Deno.readTextFileSync("./tls/root.pem");
 const tscache = new CachedTranspiler("./cache", ROOT_DIR);
 const ecdh = new CryptoUtil.ECDH_AES();
 const router = new oak.Router();
+const sessions: Record<Types.HexString, Session> = {};
 
 logger.log("Starting from", DENO_DIR);
 
@@ -175,11 +178,53 @@ function checkKeys(ctx: oak.Context) {
 	return true;
 }
 
+function checkBody(ctx: oak.Context) {
+	if (!ctx.request.hasBody) {
+		serveError(ctx, oak.Status.BadRequest, "No data");
+		return false;
+	}
+	return true;
+}
+
 router.get("/", ctx => {
 	ctx.response.redirect("/frontend/html/index.html");
 });
 
-router.post("/login", ctx => {
+router.get("/auth/key", async ctx => {
+	if (!checkKeys(ctx))
+		return;
+	loggerAuth.log("Serving public key");
+	serveJson(ctx, 200, { key: await ecdh.exportKey() });
+});
+
+router.post("/auth/session", async ctx => {
+	if (!checkKeys(ctx) || !checkBody(ctx))
+		return;
+	try {
+		var key = (await ctx.request.body({ type: "json" }).value).key;
+	} catch(e) {
+		serveError(ctx, oak.Status.BadRequest, e.message);
+		return;
+	}
+	if (key === undefined) {
+		serveError(ctx, oak.Status.BadRequest, "No key");
+		return;
+	}
+	try {
+		var sessionKey = await ecdh.deriveAES(key);
+	} catch(e) {
+		serveError(ctx, oak.Status.BadRequest, "Bad key: " + e.message);
+		return;
+	}
+	const token = CryptoUtil.hex(crypto.getRandomValues(new Uint8Array(16)));
+	sessions[token] = new Session(Types.SessionState.KEYS_READY, token,
+		sessionKey, () => delete sessions[token], 3600);
+	// logging the token lol
+	loggerAuth.log("Registered new session:", token);
+	serveJson(ctx, 200, { session: token });
+});
+
+router.post("/auth/login", ctx => {
 	if (!checkKeys(ctx))
 		return;
 	serveError(ctx, oak.Status.NotImplemented,

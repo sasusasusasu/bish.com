@@ -121,14 +121,17 @@ export class AESMessage {
 	}
 
 	/**
-	 * Return a hex string representing the message.
+	 * Return a hex string representing the initialization vector.
 	 */
-	hex() {
+	ivHex() {
 		if (this.error)
 			return;
-		return hex(this.message);
+		return hex(this.iv);
 	}
 
+	/**
+	 * Return a base64 string representing the message content.
+	 */
 	base64() {
 		if (this.error)
 			return;
