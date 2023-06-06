@@ -9,7 +9,7 @@ export default function Item(Props){
                 <p class="Name">{Props.name}<span>{Props.value}</span></p>
                 <p class="Desc">{Props.desc}</p>
             </div>
-            <img class="Delete" src="../assets/trashcan.svg" title="Delete Item"/>
+            <img class="Delete" onClick={Props.delete} src="../assets/trashcan.svg" title="Delete Item"/>
         </div>
     )
 }
