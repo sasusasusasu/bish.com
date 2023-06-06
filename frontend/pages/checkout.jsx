@@ -19,7 +19,7 @@ export default function Checkout(){
         })
     }
 
-    const ItemElements = items.map(item => <Item value={item.value} name={item.name} pic={item.pic} key={item.id} desc={item.desc} selected={item.selected} delete={()=>DeleteItem(item.id)}/>)
+    const ItemElements = items.map(item => <Item value={item.value} name={item.name} pic={item.pic} key={item.id} desc={item.desc} delete={()=>DeleteItem(item.id)}/>)
 
     return(
         <div className="Main">
