@@ -1,5 +1,4 @@
-import * as React from "https://esm.sh/preact";
-import Product from '../components/product.js'
+import Product from '../components/product'
 
 export default function Products(){
     return(

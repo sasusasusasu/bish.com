@@ -1,9 +1,4 @@
-import * as React from "https://esm.sh/preact";
-import App from './app.js'
+import * as React from 'https://esm.sh/preact';
+import App from './App.js'
 
-React.render(
-    <React.StrictMode>
-        <App/>
-    </React.StrictMode>,
-	document.getElementById("root")
-);
+React.render(<App/>, document.getElementById('root'));

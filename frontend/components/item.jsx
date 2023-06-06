@@ -1,3 +1,6 @@
+//import Trashcan from '../assets/trashcan.svg'
+const Trashcan = 'where'
+
 export default function Item(){
 
     return(
@@ -9,7 +12,7 @@ export default function Item(){
                 <p class="Name">Test Item <span>249,98€</span></p>
                 <p class="Desc">Test Description of the Item. This item contains several hazardous materials, RUN!</p>
             </div>
-            <img class="Delete" src="../assets/trashcan.svg" title="Delete Item"/>
+            <img class="Delete" src={Trashcan} title="Delete Item"/>
         </div>
     )
 }

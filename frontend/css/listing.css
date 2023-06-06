@@ -1,116 +1,98 @@
-*{
-    margin:0;
-    padding:0;
-    background-color:rgb(15, 21, 34);
-    font-family:'Arimo', sans-serif;
+#Listing {
+  width: 500px;
+  height: auto;
+  background-color: rgb(24, 34, 54);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
-
-body{
-    width:100vw;
-    height:100vh;
+#Listing #Logo {
+  background: none;
+  height: 25%;
+  max-height: 82px;
+  max-width: 166px;
 }
-
-#Listing{
-    width:500px;
-    height:auto;
-    background-color:rgb(24, 34, 54);
-    border-radius:8px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:15px;
-    padding:10px;
+#Listing h1 {
+  color: white;
+  background: none;
 }
-
-#Logo{
-    background:none;
-    height:25%;
-    max-height:82px;
-    max-width:166px;
+#Listing p {
+  color: white;
+  background: none;
 }
-
-h1{
-    color:white;
-    background:none;
+#Listing .txtinp {
+  color: white;
+  width: 95%;
+  height: 20px;
+  border-radius: 6px;
+  border-width: 1px;
+  border-color: rgb(35, 50, 80);
+  border-style: outset;
+  font-weight: 400;
+  padding: 2px;
+  letter-spacing: 1px;
 }
-
-p{
-    color:white;
-    background:none;
+#Listing .txtinp::-moz-placeholder {
+  color: rgb(163, 163, 163);
 }
-
-.txtinp{
-    color:white;
-    width:95%;
-    height:20px;
-    border-radius:6px;
-    border-width:1px;
-    border-color:rgb(35, 50, 80);
-    border-style:outset;
-    font-weight:400;
-    padding:2px;
-    letter-spacing:1px;
+#Listing .txtinp::placeholder {
+  color: rgb(163, 163, 163);
 }
-
-.txtinp::placeholder{
-    color:rgb(163, 163, 163);
+#Listing .txtinp:focus {
+  border-color: rgb(12, 16, 26);
 }
-
-.txtinp:focus{
-    border-color:rgb(12, 16, 26);
+#Listing .lbl {
+  background-color: rgb(35, 50, 80);
 }
-
-.lbl{
-    background-color:rgb(35, 50, 80);
+#Listing textarea {
+  color: black;
+  width: 50%;
+  height: 100px;
+  padding: 2px;
 }
-
-textarea{
-    color:white;
-    width:50%;
-    height:100px;
-    padding:2px;
+#Listing #Listing-Info {
+  width: 100%;
+  height: auto;
+  background: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
-
-#Listing-Info{
-    width:100%;
-    height:auto;
-    background:none;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:10px;
+#Listing #Product-Price {
+  color: black;
 }
-
-#Product-Price{
-    color:white;
+#Listing button {
+  background-color: rgb(35, 50, 80);
+  color: white;
+  width: 50%;
+  font-weight: 600;
+  font-size: 20px;
+  border-radius: 5px;
+  letter-spacing: 1px;
+  border-style: solid;
+  border-color: rgb(20, 30, 46);
+  border-width: 2px;
 }
-
-button{
-    background-color:rgb(35, 50, 80);
-    color:white;
-    width:50%;
-    font-weight:600;
-    font-size:20px;
-    border-radius:5px;
-    letter-spacing:1px;
-    border-style:solid;
-    border-color:rgb(20, 30, 46);
-    border-width:2px;
+#Listing button:hover {
+  cursor: pointer;
+  background-color: rgb(45, 65, 105);
 }
-  
-button:hover{
-    cursor:pointer;
-    background-color:rgb(45, 65, 105);
-}
-
-.Info-Container{
-    height:auto;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    width:90%;
-    background-color:rgb(21, 29, 46);
-    padding:5px;
-    border-radius:6px;
-    gap:10px;
+#Listing .Info-Container {
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 90%;
+  background-color: rgb(21, 29, 46);
+  padding: 5px;
+  border-radius: 6px;
+  gap: 10px;
 }
