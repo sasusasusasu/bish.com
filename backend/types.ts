@@ -29,23 +29,26 @@ export interface Product {
 	pictures: Array<WebImage>,
 }
 
+// public-facing user data
 export interface UserCommon {
 	id: UUID, // assigned on registration
 	name: string,
-	admin: boolean
+	admin: boolean,
+	picture: WebImage,
+	listings: Array<Product>
 }
 
+// secure user data (encrypted). use this to store user data
 export interface UserEncrypted extends UserCommon {
 	iv: string,
 	enc: string
 }
 
+// secure user data. DO NOT PUT THIS IN THE DATABASE
 export interface User extends UserCommon {
 	joined: Timestamp,
 	updated: Timestamp,
-	picture: WebImage,
 	cart: Array<Record<SerialString, number>>,
-	listings: Array<Product>
 }
 
 export interface ProductExport extends Omit<Product, "id"> {
