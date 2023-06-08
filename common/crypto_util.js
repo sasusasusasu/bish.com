@@ -46,6 +46,8 @@ export function base64(arr) {
 }
 
 export function unbase64(str) {
+	if (str instanceof Uint8Array)
+		return str;
 	const s = String(str);
 	return new TextEncoder().encode(atob(s));
 }
@@ -60,6 +62,29 @@ export async function sha256str(str) {
 
 export async function sha256hex(hex) {
 	return await sha256(unhex(hex));
+}
+
+export class HMAC {
+	static async key(digest) {
+		return await crypto.subtle.generateKey({
+			name: "HMAC", hash: digest
+		}, true, ["sign", "verify"]);
+	}
+
+	static async keyRaw(digest) {
+		return new Uint8Array(await crypto.subtle.exportKey("raw",
+			await genHMAC(digest)));
+	}
+
+	static async keyRing(digest, numKeys) {
+		return await Promise.all(new Array(numKeys).map(_ =>
+			HMAC.key(digest)));
+	}
+
+	static async keyRingRaw(digest, numKeys) {
+		return await Promise.all(new Array(numKeys).map(_ =>
+			HMAC.keyRaw(digest)));
+	}
 }
 
 export class AESMessage {
@@ -209,7 +234,7 @@ export class AES_GCM {
 	static async decryptMsg(key, msg, additional = null) {
 		if (!msg.isAesMsg && !msg.isAesMsgExport)
 			return new AESMessage(true, "Argument 1 was not an AESMessage");
-		const m = msg.isAesMsgExport ? unhex(msg.message) : msg.message;
+		const m = msg.isAesMsgExport ? unbase64(msg.message) : msg.message;
 		const iv = msg.isAesMsgExport ? unhex(msg.iv) : msg.iv;
 		return await AES_GCM.decrypt(key, m, iv, additional);
 	}

@@ -3,20 +3,19 @@ import mongodb from "npm:mongodb";
 
 export type DbClient = mongodb.MongoClient;
 export type JsObject = Record<string, unknown>;
-export type Base64String = string;
 export type UUID = string;
 export type Serial = bigint;
 export type SerialString = string;
 export type Timestamp = number;
-export type WebBase64<T extends string> = `data:${T};base64,${Base64String}`;
+export type WebBase64<T extends string> = `data:${T};base64,${string}`;
 export type WebImage = WebBase64<"image/png" | "image/jpeg">;
-export type HexString = string;
 export type JsxServeContext = oak.RouterContext<`/${string}/:path`>;
 
 export enum SessionState {
 	INVALID = 0,
-	KEYS_READY = 1,
-	LOGGED_IN = 2
+	INIT,
+	INIT_TOKEN,
+	AUTHORIZED
 }
 
 export interface Product {
@@ -37,8 +36,8 @@ export interface UserCommon {
 }
 
 export interface UserEncrypted extends UserCommon {
-	iv: HexString,
-	enc: Base64String
+	iv: string,
+	enc: string
 }
 
 export interface User extends UserCommon {
