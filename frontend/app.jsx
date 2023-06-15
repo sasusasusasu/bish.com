@@ -4,10 +4,10 @@ import { useState, useEffect } from "https://esm.sh/preact/hooks";
 
 import Navi from './components/Navi.js'
 import Frontpage from './pages/Frontpage.js'
-import Register from './pages/Register.jsx'
-import Login from './pages/Login.jsx'
-import Itemlisting from './pages/Listing.jsx'
-import Checkout from './pages/Checkout.jsx'
+import Register from './pages/Register.js'
+import Login from './pages/Login.js'
+import Itemlisting from './pages/Listing.js'
+import Checkout from './pages/Checkout.js'
 import Search from './pages/Search.js'
 
 const items = [{name: 'very cool product', price: 123, seller: 123, picture: '', id: 123}]
