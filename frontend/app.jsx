@@ -7,7 +7,6 @@ import Frontpage from './pages/Frontpage.js'
 import Register from './pages/Register.jsx'
 import Login from './pages/Login.jsx'
 import Itemlisting from './pages/Listing.jsx'
-import Catalog from './pages/Catalog.js'
 import Checkout from './pages/Checkout.jsx'
 import Search from './pages/Search.js'
 
@@ -28,7 +27,6 @@ const App = () => {
       <Itemlisting path='/listing'/>
       <Login path='/login'/>
       <Register path='/register'/>
-      <Catalog path='/catalog'/>
       <Checkout path='/checkout'/>
       <Search path='/search/:input' search={search}/>
       <p path='/products/:id' className='asd'>nothing here</p>
