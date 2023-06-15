@@ -1,0 +1,162 @@
+* {
+    margin: 0;
+  }
+  
+  /* i have no idea what this is, and where it came from */
+  undefined {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  
+  #root {
+    width: 100vw !important;
+    height: 100vh !important;
+  }
+  
+  html, body {
+    margin: 0;
+    border: 0;
+    padding: 0;
+    background-color: rgb(15, 21, 34);
+  }
+  
+  a {
+    text-decoration: none;
+  }
+  
+  .window {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .flexwindow {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .navi-main {
+    position: sticky;
+    top: 0px;
+    width: 100%;
+  }
+  .navi-main .navi {
+    width: 100%;
+    height: 50px;
+    z-index: 2;
+    background-color: rgb(24, 34, 54);
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    box-shadow: -2px 2px 5px 0px rgba(0, 0, 0, 0.75);
+  }
+  .navi-main .navi .logo {
+    margin: 0 1% 0 10px;
+    height: 32px;
+    -webkit-user-select: none;
+       -moz-user-select: none;
+            user-select: none;
+    cursor: pointer;
+  }
+  .navi-main .navi p {
+    color: white;
+    margin: 0 0 0 20px;
+    cursor: pointer;
+  }
+  .navi-main .navi a {
+    text-decoration: none;
+  }
+  .navi-main .navi .cart {
+    font-size: 22px;
+    margin: 0 10px;
+    -webkit-user-select: none;
+       -moz-user-select: none;
+            user-select: none;
+  }
+  .navi-main .navi input {
+    margin: 0 0 0 auto;
+    width: 25%;
+    height: 28px;
+    border-radius: 8px;
+    border: 0;
+    background-color: rgb(35, 50, 80);
+    color: white;
+    padding: 0 3px 0 3px;
+    text-indent: 10px;
+  }
+  .navi-main .navi input:hover {
+    outline: solid 1px rgba(255, 255, 255, 0.8);
+  }
+  .navi-main .navi input:focus {
+    outline: solid 1px rgba(255, 255, 255, 0.8);
+  }
+  .navi-main .navi input::-moz-placeholder {
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .navi-main .navi input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .navi-main .cart-preview {
+    position: absolute;
+    right: 0px;
+    margin: 4px 4px 0 auto;
+    padding: 11px;
+    border-radius: 0 0 20px 20px;
+    color: white;
+    background-color: rgb(24, 34, 54);
+    width: 300px;
+    box-shadow: 0 0 10px 0px rgb(0, 0, 0);
+  }
+  .navi-main .cart-preview h2 {
+    margin: 10px 0 0 0;
+  }
+  .navi-main .cart-preview .item-in-cart-preview {
+    height: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .navi-main .cart-preview .item-in-cart-preview img {
+    box-shadow: 6px 3px 5px 0px rgba(0, 0, 0, 0.2);
+    width: 70px;
+    height: 70px;
+    display: inline;
+    border-radius: 4px;
+  }
+  .navi-main .cart-preview .item-in-cart-preview .info {
+    width: 55%;
+  }
+  .navi-main .cart-preview .item-in-cart-preview .trash {
+    font-size: 40px;
+    cursor: pointer;
+  }
+  .navi-main .cart-preview .total {
+    display: inline-block;
+    width: 50%;
+    margin: 14px 0 14px 0;
+  }
+  .navi-main .cart-preview a {
+    color: white;
+    display: inline-block;
+    cursor: pointer;
+  }
+  .navi-main .cart-preview .cart-preview-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .navi-main .cart-preview .your-items {
+    margin: 10px 0 15px 0;
+  }
+  
+  .hidden {
+    display: none;
+  }
+  
+  .asd {
+    color: white;
+    line-height: 4rem;
+  }
