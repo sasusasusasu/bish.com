@@ -41,6 +41,13 @@ export default function Products(){
 
     function Toggle(status){
         setProds(status)
+        if (status === false){
+            document.getElementById('New').classList.add('Chosen')
+            document.getElementById('Used').classList.remove('Chosen')
+        } else if (status === true){
+            document.getElementById('New').classList.remove('Chosen')
+            document.getElementById('Used').classList.add('Chosen')
+        }
     }
 
     return(

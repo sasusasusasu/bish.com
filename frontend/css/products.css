@@ -36,7 +36,7 @@ body {
     padding-bottom: 20px;
     padding-top: 20px;
     border-radius: 10px;
-    display: none;
+    display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     gap: 10px;
