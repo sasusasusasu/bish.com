@@ -1,11 +1,18 @@
-import * as React from "https://esm.sh/preact";
+import * as React from "https://esm.sh/preact"
+import Sidescroll from '../components/Sidescroll.js'
+import ProductContainer from "../components/ProductContainer.js"
 
 const Frontpage = () => {
+    const items = new Array(30).fill({id: 200, name: "product", price: 500, img: '../../assets/oj.jpg'})
+
     return (
-        <div className="asd">        
-            <p>Lorem ipsum dolor sit amet. Sed quibusdam voluptas et veritatis accusantium et minus laborum non optio voluptate aut minima vero. Eos accusamus quam qui iste voluptatum cum rerum doloremque At veritatis dolorem rem reiciendis quisquam. Ad natus voluptas id sint optio et mollitia nobis At adipisci repellendus sit fugit galisum sit aperiam excepturi. Non soluta libero est quam deleniti aut laborum quam ut blanditiis error. Eos quis fuga At nulla laudantium rem officiis corporis quo cumque ipsum ea cupiditate consectetur ut dolores deserunt. Id eius autem et porro exercitationem ut corporis minus aut tenetur autem eum dolorem quia. Quo nulla minima et maxime exercitationem et repudiandae possimus sit illo molestiae. Eum fuga vero qui facilis deserunt sed earum quidem et error voluptas ut quam impedit.</p>
-            <p>Lorem ipsum dolor sit amet. Sed quibusdam voluptas et veritatis accusantium et minus laborum non optio voluptate aut minima vero. Eos accusamus quam qui iste voluptatum cum rerum doloremque At veritatis dolorem rem reiciendis quisquam. Ad natus voluptas id sint optio et mollitia nobis At adipisci repellendus sit fugit galisum sit aperiam excepturi. Non soluta libero est quam deleniti aut laborum quam ut blanditiis error. Eos quis fuga At nulla laudantium rem officiis corporis quo cumque ipsum ea cupiditate consectetur ut dolores deserunt. Id eius autem et porro exercitationem ut corporis minus aut tenetur autem eum dolorem quia. Quo nulla minima et maxime exercitationem et repudiandae possimus sit illo molestiae. Eum fuga vero qui facilis deserunt sed earum quidem et error voluptas ut quam impedit.</p>
-            <p>Lorem ipsum dolor sit amet. Sed quibusdam voluptas et veritatis accusantium et minus laborum non optio voluptate aut minima vero. Eos accusamus quam qui iste voluptatum cum rerum doloremque At veritatis dolorem rem reiciendis quisquam. Ad natus voluptas id sint optio et mollitia nobis At adipisci repellendus sit fugit galisum sit aperiam excepturi. Non soluta libero est quam deleniti aut laborum quam ut blanditiis error. Eos quis fuga At nulla laudantium rem officiis corporis quo cumque ipsum ea cupiditate consectetur ut dolores deserunt. Id eius autem et porro exercitationem ut corporis minus aut tenetur autem eum dolorem quia. Quo nulla minima et maxime exercitationem et repudiandae possimus sit illo molestiae. Eum fuga vero qui facilis deserunt sed earum quidem et error voluptas ut quam impedit.</p>   
+        <div className='frontpage'>
+            <h2>Products not recommended for anyone! (also this breaks sometimes, it should stop on hover)</h2>
+            <Sidescroll />
+            <div className='viiva'></div>
+            <h2 style={{"margin": "40px 0"}}>Other products nobody should buy!</h2>
+            <ProductContainer items={items}/>
+            <p style={{textAlign: 'center', textDecoration: 'underline'}}>pages? or infinite scrolling? ¯\_(ツ)_/¯</p>
         </div>
     )
 }

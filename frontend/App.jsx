@@ -1,39 +1,39 @@
-import Router from 'https://esm.sh/preact-router@4.1.1'
-import * as React from "https://esm.sh/preact";
-import { useState, useEffect } from "https://esm.sh/preact/hooks";
+import Router from 'https://esm.sh/preact-router'
+import * as React from 'https://esm.sh/preact'
+import { useState, useEffect } from 'https://esm.sh/preact/hooks'
 
 import Navi from './components/Navi.js'
 import Frontpage from './pages/Frontpage.js'
-import Register from './pages/Register.js'
+import Profile from './pages/Profile.js'
 import Login from './pages/Login.js'
 import Itemlisting from './pages/Listing.js'
-import Catalog from './pages/Catalog.js'
+import Products from './pages/products.js'
 import Checkout from './pages/Checkout.js'
 import Search from './pages/Search.js'
+import Send from './pages/Send.js'
 
-const items = [{name: 'very cool product', price: 123, seller: 123, picture: '', id: 123}]
+const items = [{name: 'very cool product', price: 123, seller: 123, picture: '../../assets/oj.jpg', id: 123}]
 
 const App = () => {
+
   const [search, setSearch] = useState('')
   const [cart, setCart] = useState([])
-  useEffect(() => setCart(items), [])
+  useEffect(() => setCart([items[0], {...items[0], id: 124}]), [])
 
   return (
    <div>
     <Navi search={ search } setSearch={ setSearch } items={cart} setItems={ setCart } />
     <Router>
-      <p path='/frontend/html/index.html' className='asd'>...</p>
+      <Send path='/frontend/html/index.html'/>
       <Frontpage path='/'/>
       <Login path='/login'/>
       <Itemlisting path='/listing'/>
-      <Login path='/login'/>
-      <Register path='/register'/>
-      <Catalog path='/catalog'/>
+      <Profile path='/profile'/>
+      <Products path='/products'/>
+      <p path='/products/:id'>nothing here</p>
       <Checkout path='/checkout'/>
       <Search path='/search/:input' search={search}/>
-      <p path='/products/:id' className='asd'>nothing here</p>
-      <div path='*'> <p>nice</p> </div>
-   </Router> 
+   </Router>
   </div>
   )
 }

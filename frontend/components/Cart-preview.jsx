@@ -1,4 +1,4 @@
-import { route } from 'https://esm.sh/preact-router@4.1.1'
+import { route } from 'https://esm.sh/preact-router'
 import ItemInCart from './ItemInCart.js'
 import * as React from "https://esm.sh/preact";
 

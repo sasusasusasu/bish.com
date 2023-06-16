@@ -1,8 +1,8 @@
 * {
   margin: 0;
+  color: white;
 }
 
-/* i have no idea what this is, and where it came from */
 undefined {
   width: 100%;
   height: 100%;
@@ -19,6 +19,8 @@ html, body {
   border: 0;
   padding: 0;
   background-color: rgb(15, 21, 34);
+  width: 100%;
+  height: 100%;
 }
 
 a {
@@ -42,11 +44,11 @@ a {
   position: sticky;
   top: 0px;
   width: 100%;
+  z-index: 2;
 }
 .navi-main .navi {
   width: 100%;
   height: 50px;
-  z-index: 2;
   background-color: rgb(24, 34, 54);
   display: flex;
   justify-content: flex-start;
@@ -65,6 +67,9 @@ a {
   color: white;
   margin: 0 0 0 20px;
   cursor: pointer;
+}
+.navi-main .navi p:hover {
+  text-decoration: underline;
 }
 .navi-main .navi a {
   text-decoration: none;
@@ -119,7 +124,7 @@ a {
   justify-content: space-between;
   align-items: center;
 }
-.navi-main .cart-preview .item-in-cart-preview img {
+.navi-main .cart-preview .item-in-cart-preview img:not(.trash) {
   box-shadow: 6px 3px 5px 0px rgba(0, 0, 0, 0.2);
   width: 70px;
   height: 70px;
@@ -129,9 +134,16 @@ a {
 .navi-main .cart-preview .item-in-cart-preview .info {
   width: 55%;
 }
-.navi-main .cart-preview .item-in-cart-preview .trash {
-  font-size: 40px;
+.navi-main .cart-preview .item-in-cart-preview .info .item-name {
   cursor: pointer;
+}
+.navi-main .cart-preview .item-in-cart-preview .info .item-name:hover {
+  text-decoration: underline;
+}
+.navi-main .cart-preview .item-in-cart-preview .trash {
+  height: 40px;
+  cursor: pointer;
+  filter: invert(80%);
 }
 .navi-main .cart-preview .total {
   display: inline-block;
@@ -152,11 +164,141 @@ a {
   margin: 10px 0 15px 0;
 }
 
-.hidden {
-  display: none;
+.frontpage {
+  color: white;
+  width: 94%;
+  margin: 40px auto;
+}
+.frontpage .sidescroll-main {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin: 20px;
+  width: 100%;
+  height: 180px;
+  background-color: rgb(24, 34, 54);
+  overflow: hidden;
+  border-radius: 5px;
+  border: 1px solid rgba(100, 100, 100, 0.5);
+  box-shadow: 0px 0px 16px 3px rgba(0, 0, 0, 0.64);
+}
+.frontpage .sidescroll-main .sidescrollitem {
+  position: relative;
+  min-width: 180px;
+  max-width: 180px;
+  height: 94%;
+  background-color: black;
+  padding: 0;
+  margin: 0 6px;
+  cursor: pointer;
+}
+.frontpage .sidescroll-main .sidescrollitem img {
+  height: 100%;
+  width: 100%;
+}
+.frontpage .sidescroll-main .sidescrollitem .tag {
+  overflow: hidden;
+  background-color: rgb(24, 34, 54);
+  position: absolute;
+  white-space: nowrap;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+}
+.frontpage .sidescroll-main .sidescrollitem .nametag {
+  border-radius: 0 0 5px 0;
+  top: 0px;
+  padding: 0px 5px 1px 4px;
+  transform: translate(-1px, -2px);
+}
+.frontpage .sidescroll-main .sidescrollitem .pricetag {
+  bottom: 0px;
+  right: 0px;
+  padding: 0 5px;
+  border-radius: 5px 0 0 0;
+  transform: translateY(2px);
+}
+.frontpage .sidescroll-main:hover {
+  overflow: scroll;
 }
 
-.asd {
-  color: white;
-  line-height: 4rem;
+.profile-main {
+  height: 100%;
+  width: 100%;
+  padding: 24px;
 }
+.profile-main .profile {
+  height: 240px;
+  display: flex;
+  justify-content: space-between;
+}
+.profile-main .profile .pfp-container {
+  margin: 0 0 0 50px;
+  height: 200px;
+  width: 200px;
+  background-color: black;
+  box-shadow: -2px 2px 5px 0px rgba(0, 0, 0, 0.75);
+}
+.profile-main .profile .pfp-container img {
+  width: 200px;
+  height: 200px;
+  -o-object-fit: cover;
+     object-fit: cover;
+  overflow: hidden;
+}
+.profile-main .profile .pfp-container img:hover {
+  filter: blur(50%);
+  filter: brightness(30%);
+}
+.profile-main .profile .text {
+  text-align: right;
+  margin: 0 50px 0 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.productcontainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 25px;
+  margin: 0 0 20px 0;
+}
+.productcontainer .itemtile-main {
+  padding-top: 3px;
+  text-align: center;
+  background-color: rgb(24, 34, 54);
+  height: 220px;
+  width: 200px;
+  box-shadow: -2px 2px 5px 0px rgba(0, 0, 0, 0.75);
+  border-radius: 4px;
+  display: block;
+  border: 1px solid rgba(100, 100, 100, 0.5);
+}
+.productcontainer .itemtile-main .img-div {
+  background-color: black;
+  border: 1px solid rgba(100, 100, 100, 0.5);
+  margin: 0 auto;
+  width: 190px;
+  height: 180px;
+}
+.productcontainer .itemtile-main .img-div img {
+  -o-object-fit: fill;
+     object-fit: fill;
+  width: 100%;
+  height: 100%;
+}
+.productcontainer .itemtile-main .itemtile-main:hover {
+  filter: brightness(120%);
+}
+
+.viiva {
+  background-color: white;
+  height: 1px;
+  width: 100%;
+  margin: 0;
+  border: 0;
+}
+
+.hidden {
+  display: none;
+}/*# sourceMappingURL=styles.css.map */
