@@ -21,7 +21,7 @@ const TemporaryUsed = [
 
 export default function Products(){
 
-    const [prods, setProds] = useState(false) //false = new products, true = old products
+    const [prods, setProds] = React.useState(false) //false = new products, true = old products
 
     const NewProducts = TemporaryNew.map(obj => 
             <Product
