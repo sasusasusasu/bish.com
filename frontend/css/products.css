@@ -109,3 +109,8 @@ body {
 .Chosen {
     background-color: rgb(33, 48, 80);
 }
+
+.Container{
+    width:100%;
+    height:100%;
+}

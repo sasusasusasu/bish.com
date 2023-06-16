@@ -51,7 +51,7 @@ export default function Products(){
     }
 
     return(
-    <div>
+    <div id='Container'>
         <div className="Section">
             <button className="Btn Chosen" onClick={() => Toggle(false)} id="New">New Products</button>
             <button className="Btn" onClick={() => Toggle(true)} id="Used">Used Products</button>
