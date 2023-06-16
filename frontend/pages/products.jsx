@@ -23,27 +23,21 @@ export default function Products(){
 
     const [prods, setProds] = useState(false) //false = new products, true = old products
 
-    const NewProducts = TemporaryNew.map(obj => {
-        return(
+    const NewProducts = TemporaryNew.map(obj => 
             <Product
                 key={obj.id}
                 name={obj.name}
                 price={obj.price}
                 img={obj.img}
-            />
-        )
-    })
+            />)
 
-    const UsedProducts = TemporaryUsed.map(obj => {
-        return(
+    const UsedProducts = TemporaryUsed.map(obj =>
             <Product
                 key={obj.id}
                 name={obj.name}
                 price={obj.price}
                 img={obj.img}
-            />
-        )
-    })
+            />)
 
     function Toggle(status){
         setProds(status)
@@ -57,13 +51,13 @@ export default function Products(){
         </div>
 
         {prods ?
-            <div id="New-Products">
-                <NewProducts/>
-            </div>
-            :
             <div id="Used-Products">
                 <UsedProducts/>
+            </div>
+            :
+            <div id="New-Products">
+                <NewProducts/>
             </div>}
     </div>
-)
+    )
 }
