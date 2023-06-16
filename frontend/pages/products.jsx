@@ -45,18 +45,18 @@ export default function Products(){
 
     return(
     <div>
-        <div class="Section">
-            <button class="Btn Chosen" onClick={Toggle(false)} id="New">New Products</button>
-            <button class="Btn" onClick={Toggle(true)} id="Used">Used Products</button>
+        <div className="Section">
+            <button className="Btn Chosen" onClick={() => Toggle(false)} id="New">New Products</button>
+            <button className="Btn" onClick={() => Toggle(true)} id="Used">Used Products</button>
         </div>
 
         {prods ?
             <div id="Used-Products">
-                <UsedProducts/>
+                {UsedProducts}
             </div>
             :
             <div id="New-Products">
-                <NewProducts/>
+                {NewProducts}
             </div>}
     </div>
     )
