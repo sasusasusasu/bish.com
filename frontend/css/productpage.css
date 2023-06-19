@@ -1,0 +1,207 @@
+* {
+  padding: 0;
+  margin: 0;
+  background-color: rgb(15, 21, 34);
+  font-family: "Arimo", sans-serif;
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+#Container {
+  flex-direction: column;
+  align-items: center;
+  display: flex;
+  gap: 20px;
+}
+@media (min-width: 768px) {
+  #Container {
+    width: 100vw;
+    height: auto;
+    background: none;
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+#Product-Images {
+  background-color: rgb(26, 43, 63);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  width: 75vw;
+  height: auto;
+  aspect-ratio: 1/1;
+}
+@media (min-width: 768px) {
+  #Product-Images {
+    width: 30vw;
+  }
+}
+
+#Big-Pic {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  aspect-ratio: 1/1;
+  background: none;
+}
+@media (min-width: 768px) {
+  #Big-Pic {
+    width: auto;
+    height: auto;
+  }
+}
+
+#Small-Pics {
+  display: flex;
+  flex-direction: row;
+}
+
+.SImg {
+  width: 20vw;
+  height: auto;
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+  aspect-ratio: 1/1;
+}
+
+#Product-Info {
+  width: 100vw;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+@media (min-width: 768px) {
+  #Product-Info {
+    width: 500px;
+    height: auto;
+    background: none;
+  }
+}
+
+h1, h2 {
+  color: white;
+  font-family: "Arimo", sans-serif;
+}
+
+h2 {
+  font-size: 20px;
+}
+
+h3 {
+  color: rgb(30, 192, 30);
+  font-size: 30px;
+}
+
+#AddToCart {
+  width: 150px;
+  height: 50px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+button {
+  color: white;
+  font-size: 20px;
+  border-style: none;
+  border-radius: 36px;
+  background-color: rgb(26, 43, 63);
+  width: 40px;
+  height: 40px;
+}
+button:hover {
+  cursor: pointer;
+  background-color: rgb(37, 61, 88);
+}
+
+#Quantity {
+  font-size: 50px;
+}
+
+span {
+  color: rgb(18, 189, 18);
+}
+
+#Plus:hover {
+  background-color: rgb(35, 100, 74);
+}
+
+#Minus:hover {
+  background-color: rgb(133, 50, 50);
+}
+
+#Plus, #Minus {
+  font-size: 30px;
+  font-weight: 600;
+  border-radius: 100%;
+}
+
+#Purchase {
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  width: 100vw;
+  gap: 15px;
+}
+@media (min-width: 768px) {
+  #Purchase {
+    width: 400px;
+  }
+}
+
+#Adder {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  align-items: center;
+  background: none;
+  gap: 10px;
+}
+@media (min-width: 768px) {
+  #Adder {
+    flex-direction: row;
+  }
+}
+
+p {
+  font-size: 14px;
+  color: rgb(150, 150, 150);
+}
+
+#UN {
+  color: rgb(0, 255, 242);
+}
+#UN:hover {
+  cursor: pointer;
+  color: rgb(0, 207, 197);
+}
+
+#Add {
+  background-color: rgb(37, 61, 88);
+  font-weight: 600;
+  font-size: 30px;
+  width: 100%;
+  height: 50px;
+}
+@media (min-width: 768px) {
+  #Add {
+    width: 150px;
+    height: 40px;
+    font-size: 24px;
+  }
+}
+#Add:hover {
+  cursor: pointer;
+  background-color: rgb(35, 100, 74);
+}
