@@ -29,8 +29,8 @@ function id128() {
 export class Session {
 	#timeout?: number; // timer ID
 	#state: Types.SessionState;
+	sessionKey?: CryptoKey; // RSA
 	id: string;
-	sessionKey: CryptoKey;
 	token?: Uint8Array; // computed randomly
 	expireTime: number;
 	expireDate: Date;
@@ -48,11 +48,9 @@ export class Session {
 		return e;
 	}
 
-	constructor(id: string, key: CryptoKey,
-		expires: number, onExpiry: ExpireFunc = null) {
+	constructor(id: string, expires: number, onExpiry: ExpireFunc = null) {
 		this.#state = Types.SessionState.INIT;
 		this.id = id;
-		this.sessionKey = key;
 		this.expireTime = expires;
 		this.onExpiry = onExpiry;
 		this.expireDate = this.#kindaSortaAtomicSetTimeout();
@@ -119,12 +117,12 @@ export default class SessionPool {
 			this.globalExpire = expire;
 	}
 
-	new(key: CryptoKey, expires?: number): Session {
+	new(expires?: number): Session {
 		const exp = (expires === undefined) ? this.globalExpire : expires;
 		if (exp === undefined)
 			throw new TypeError("No expiry time provided");
 		const id = this.#generateId();
-		this.pool[id] = new Session(id, key, exp, () => this.remove(id));
+		this.pool[id] = new Session(id, exp, () => this.remove(id));
 		return this.pool[id];
 	}
 

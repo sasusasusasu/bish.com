@@ -42,14 +42,25 @@ export function unhex(str) {
 
 export function base64(arr) {
 	const a = (arr instanceof Uint8Array) ? arr : new Uint8Array(arr);
-	return btoa(new TextDecoder().decode(a));
+	return btoa(String.fromCharCode.apply(null, a));
 }
 
 export function unbase64(str) {
 	if (str instanceof Uint8Array)
 		return str;
-	const s = String(str);
-	return new TextEncoder().encode(atob(s));
+	return Uint8Array.from(atob(String(str)), c => c.charCodeAt(0));
+}
+
+export function base64url(arr) {
+	return base64(arr).replace(/=/g, "").replace(/\+/g, "-")
+		.replace(/\//g, "_");
+}
+
+export function unbase64url(str) {
+	if (str instanceof Uint8Array)
+		return str;
+	const s = String(str).replace(/\-/g, "+").replace(/_/g, "/");
+	return unbase64(s + "=".repeat((4 - s.length % 4) % 4));
 }
 
 export async function sha256(data) {
@@ -84,6 +95,61 @@ export class HMAC {
 	static async keyRingRaw(digest, numKeys) {
 		return await Promise.all(new Array(numKeys).map(_ =>
 			HMAC.keyRaw(digest)));
+	}
+}
+
+export class PBKDF2 {
+	#kdfMaterial;
+
+	constructor(passwd) {
+		this.#kdfMaterial = null;
+		this.ready = new Promise((resolve, reject) => {
+			crypto.subtle.importKey("raw",
+				new TextEncoder().encode(passwd),
+				"PBKDF2", false, ["deriveKey", "deriveBits"])
+			.then(km => {
+				this.#kdfMaterial = km;
+				resolve(true); // key material is verboten
+			}, e => reject(e));
+		});
+	}
+
+	// returns an equivalent to CryptoKeyPair
+	async deriveECDH() {
+		await this.ready;
+		const salt = crypto.getRandomValues(new Uint8Array(96));
+		const jwk = {
+			x: "useless",
+			y: "clueless", // importKey refuses to use any real values I pass
+			d: base64url(await crypto.subtle.deriveBits({
+				name: "PBKDF2",
+				hash: "SHA-256",
+				salt: salt,
+				iterations: 100000
+			}, this.#kdfMaterial, 384)),
+			kty: "EC",
+			alg: "ECDH",
+			crv: "P-384",
+			ext: true,
+			key_ops: ["deriveKey", "deriveBits"]
+		};
+		
+		const ecdhPrivate = await crypto.subtle.importKey("jwk", jwk, {
+			name: "ECDH",
+			namedCurve: "P-384"
+		}, true, ["deriveKey", "deriveBits"]);
+
+		// grab the random curve points webcrypto generates for some reason.
+		// we'll use those as the public key LMAOOOOOOOO
+		const privExport = await crypto.subtle.exportKey("pkcs8", ecdhPrivate);
+		const ecdhPublic = await crypto.subtle.importKey("raw",
+			privExport.slice(88), // the entire public key is at 88 in the PKCS#8 object
+			{ name: "ECDH", namedCurve: "P-384" }, true, []);
+		
+		return {
+			publicKey: ecdhPublic,
+			privateKey: ecdhPrivate
+		};
 	}
 }
 
@@ -190,7 +256,7 @@ export class AES_GCM {
 			name: "AES-GCM",
 			iv: init,
 			...((additional === null) ? {} : {additionalData: additional}),
-			tagLength: 96
+			tagLength: 128
 		}, key, data);
 	}
 
@@ -240,7 +306,7 @@ export class AES_GCM {
 	}
 }
 
-export class ECDH_AES {
+export class ECDH {
 	static #import(raw) {
 		return crypto.subtle.importKey("raw", raw, {
 			name: "ECDH",
@@ -248,33 +314,38 @@ export class ECDH_AES {
 		}, true, []);
 	}
 
-	constructor() {
-		this.keypairReady = false;
-		crypto.subtle.generateKey({
-			name: "ECDH",
-			namedCurve: "P-384" // Deno doesn't support P-521
-		}, false, ["deriveKey"]).then(kp => {
-			this.keypair = kp;
-			this.keypairReady = true;
-			this.#keypairHandler(kp);
+	constructor(keypair = null) {
+		this.ready = new Promise((resolve, reject) => {
+			if (keypair !== null) {
+				this.keypair = keypair;
+				resolve(keypair);
+				return;
+			}
+			crypto.subtle.generateKey({
+				name: "ECDH",
+				namedCurve: "P-384" // Deno doesn't support P-521
+			}, true, ["deriveKey", "deriveBits"]).then(kp => {
+				this.keypair = kp;
+				resolve(kp);
+			}, e => reject(e));
 		});
-	}
-
-	#keypairHandler = _ => false;
-	onKeypairReady(cb) {
-		this.#keypairHandler = (typeof(cb) === "function") ?
-			cb : this.#keypairHandler;
-		if (this.keypairReady)
-			this.#keypairHandler(this.keypair);
 	}
 
 	/**
 	 * Export the public key as a hex string.
 	 */
 	async exportKey() {
+		await this.ready;
 		const k = await crypto.subtle.exportKey("raw",
 			this.keypair.publicKey);
 		return hex(k);
+	}
+
+	async exportPrivateKey() {
+		await this.ready;
+		const k = await crypto.subtle.exportKey("pkcs8",
+			this.keypair.publicKey);
+		return k;
 	}
 
 	/**
@@ -283,11 +354,10 @@ export class ECDH_AES {
 	 * @param {String} theirs Public key
 	 */
 	async deriveAES(theirs) {
-		if (!this.keypairReady)
-			throw new ReferenceError("ECDH keypair not ready");
+		await this.ready;
 		return await crypto.subtle.deriveKey({
 			name: "ECDH",
-			public: await ECDH_AES.#import(unhex(theirs))
+			public: await ECDH.#import(unhex(theirs))
 		}, this.keypair.privateKey, {
 			name: "AES-GCM",
 			length: 256

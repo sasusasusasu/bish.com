@@ -31,7 +31,7 @@ const DENO_DIR = path.dirname(path.fromFileUrl(Deno.mainModule));
 const DENO_HOST = "localhost";
 const DENO_PORT = 8443;
 const MONGO_PORT = 27017;
-const SESSION_EXPIRE = 3600; // seconds
+const SESSION_EXPIRE = 600; // seconds
 const MONGO_URI = `mongodb://${DENO_HOST}:${MONGO_PORT}`;
 const ROOT_DIR = path.resolve(DENO_DIR, "..");
 const HOST_DIRS = ["common", "assets", "frontend"];
@@ -47,7 +47,6 @@ const certKey = Deno.readTextFileSync("./tls/ckey.pem");
 const certChain = Deno.readTextFileSync("./tls/cert.pem")
 	+ Deno.readTextFileSync("./tls/root.pem");
 const tscache = new CachedTranspiler("./cache", ROOT_DIR);
-const ecdh = new CryptoUtil.ECDH_AES();
 const router = new oak.Router();
 const sessions = new SessionPool(SESSION_EXPIRE);
 
@@ -173,80 +172,28 @@ function serveError(ctx: oak.Context, code: number, msg: string) {
 	});
 }
 
-function checkKeys(ctx: oak.Context) {
-	if (!ecdh.keypairReady) {
-		serveError(ctx, oak.Status.ServiceUnavailable, "ECDH keys not ready");
-		return false;
-	}
-	return true;
-}
-
-function checkBody(ctx: oak.Context) {
+async function tryGetBody(ctx: oak.Context) {
 	if (!ctx.request.hasBody) {
 		serveError(ctx, oak.Status.BadRequest, "No data");
-		return false;
-	}
-	return true;
-}
-
-async function tryGetKeyFromJSON(ctx: oak.Context)
-	: Promise<string | null> {
-	try {
-		return (await ctx.request.body({ type: "json" }).value).key;
-	} catch(e) {
-		loggerAuth.error("Failed retrieving key from response");
-		serveError(ctx, oak.Status.InternalServerError, e.message);
 		return null;
 	}
-}
-
-async function tryDeriveAES(pubkey: string, ctx: oak.Context)
-	: Promise<CryptoKey | null> {
-	try {
-		const k = await ecdh.deriveAES(pubkey);
-		if (k === undefined) {
-			serveError(ctx, oak.Status.BadRequest, "No key");
-			return null;
-		}
-		return k;
-	} catch(e) {
-		serveError(ctx, oak.Status.BadRequest, "Bad key: " + e.message);
-		return null;
-	}
+	return await ctx.request.body({ type: "json" }).value;
 }
 
 router.get("/", ctx => {
 	ctx.response.redirect("/frontend/html/index.html");
 });
 
-// session NOT needed
-router.get("/auth/key", async ctx => {
-	if (!checkKeys(ctx))
+router.post("/auth/register", async ctx => {
+	const body = await tryGetBody(ctx);
+	if (!body)
 		return;
-	loggerAuth.log("Serving public key");
-	serveJson(ctx, 200, { key: await ecdh.exportKey() });
-});
-
-// session NOT needed
-router.post("/auth/session", async ctx => {
-	if (!checkKeys(ctx) || !checkBody(ctx))
-		return;
-	const clientECDH = await tryGetKeyFromJSON(ctx);
-	if (!clientECDH)
-		return;
-	const sessionKey = await tryDeriveAES(clientECDH, ctx);
-	if (!sessionKey)
-		return;
-	const s = sessions.new(sessionKey);
-	loggerAuth.log("Registered new session", s.id,
-		"expiring", s.expireDate.toString());
-	await s.cookie(ctx);
-	serveJson(ctx, 200, {}); // simply send "error: false"
 });
 
 // session needed, authorization NOT needed
-router.post("/auth/login", ctx => {
-	if (!checkKeys(ctx))
+router.post("/auth/login", async ctx => {
+	const body = await tryGetBody(ctx);
+	if (!body)
 		return;
 	serveError(ctx, oak.Status.NotImplemented,
 		"Login not implemented (soon!)");
