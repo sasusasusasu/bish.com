@@ -86,6 +86,7 @@ export class Session {
 		return this.#state;
 	}
 
+	/*
 	async decrypt(data: CryptoData, iv: CryptoData) {
 		if (this.#state !== Types.SessionState.AUTHORIZED)
 			return new CryptoUtil.AESMessage(true, "Unauthorized session");
@@ -99,6 +100,7 @@ export class Session {
 		return await CryptoUtil.AES_GCM.encrypt(this.sessionKey,
 			CryptoUtil.unbase64(data), this.token);
 	}
+	*/
 }
 
 export default class SessionPool {

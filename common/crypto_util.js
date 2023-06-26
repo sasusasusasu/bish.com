@@ -100,9 +100,11 @@ export class HMAC {
 
 export class PBKDF2 {
 	#kdfMaterial;
+	#wrapperKey;
 
 	constructor(passwd) {
 		this.#kdfMaterial = null;
+		this.#wrapperKey = null;
 		this.ready = new Promise((resolve, reject) => {
 			crypto.subtle.importKey("raw",
 				new TextEncoder().encode(passwd),
@@ -114,42 +116,29 @@ export class PBKDF2 {
 		});
 	}
 
-	// returns an equivalent to CryptoKeyPair
-	async deriveECDH() {
-		await this.ready;
-		const salt = crypto.getRandomValues(new Uint8Array(96));
-		const jwk = {
-			x: "useless",
-			y: "clueless", // importKey refuses to use any real values I pass
-			d: base64url(await crypto.subtle.deriveBits({
-				name: "PBKDF2",
-				hash: "SHA-256",
-				salt: salt,
-				iterations: 100000
-			}, this.#kdfMaterial, 384)),
-			kty: "EC",
-			alg: "ECDH",
-			crv: "P-384",
-			ext: true,
-			key_ops: ["deriveKey", "deriveBits"]
-		};
-		
-		const ecdhPrivate = await crypto.subtle.importKey("jwk", jwk, {
-			name: "ECDH",
-			namedCurve: "P-384"
-		}, true, ["deriveKey", "deriveBits"]);
+	async genWrapper() {
+		const salt = crypto.getRandomValues(new Uint8Array(64));
+		this.#wrapperKey = await crypto.subtle.deriveKey({
+			name: "PBKDF2",
+			hash: "SHA-256",
+			salt: salt,
+			iterations: 100000
+		}, this.#kdfMaterial, {
+			name: "AES-KW",
+			length: 256
+		}, true, ["wrapKey, unwrapKey"]);
+		return salt;
+	}
 
-		// grab the random curve points webcrypto generates for some reason.
-		// we'll use those as the public key LMAOOOOOOOO
-		const privExport = await crypto.subtle.exportKey("pkcs8", ecdhPrivate);
-		const ecdhPublic = await crypto.subtle.importKey("raw",
-			privExport.slice(88), // the entire public key is at 88 in the PKCS#8 object
-			{ name: "ECDH", namedCurve: "P-384" }, true, []);
-		
-		return {
-			publicKey: ecdhPublic,
-			privateKey: ecdhPrivate
-		};
+	async wrapPrivateRSA(k) {
+		return await crypto.subtle.wrapKey("pkcs8", k, this.#wrapperKey, "AES-KW");
+	}
+
+	async unwrapPrivateRSA(k) {
+		return await crypto.subtle.unwrapKey("pkcs8", k, this.#wrapperKey, "AES-KW", {
+			name: "RSA-OAEP",
+			hash: "SHA-256"
+		}, true, ["decrypt"]);
 	}
 }
 

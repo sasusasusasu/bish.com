@@ -1,0 +1,20 @@
+Client registration:
+
+1. Client creates RSA keypair
+2. Client wraps PKCS#8 RSA private key with AES-KW
+ -> wrapping key is generated from PBKDF2:
+  - user's password as key material
+  - 512-bit salt
+  - 100k iterations
+  - SHA-256 hashing
+3. Client sends user data, public RSA key, PBKDF2 salt and the wrapped private key to the server
+4. Server encrypts user data with public RSA key
+
+Client login:
+
+1. Server sends PBKDF2 salt and wrapped RSA private key to client
+2. Client unwraps RSA private key with AES-KW and PBKDF2
+3. Server encrypts a token with the requested client's public key
+4. Client decrypts token, sends it back to server
+5. If server's auth token matches the client's token:
+6. Server sends encrypted user data to client and creates authorized session
