@@ -24,46 +24,48 @@ export default function Products(){
 
     const [prods, setProds] = useState(false) //false = new products, true = old products
 
-    const NewProducts = TemporaryNew.map(obj => {
-        return(
+    const NewProducts = TemporaryNew.map(obj => 
             <Product
                 key={obj.id}
                 name={obj.name}
                 price={obj.price}
                 img={obj.img}
-            />
-        )
-    })
+            />)
 
-    const UsedProducts = TemporaryUsed.map(obj => {
-        return(
+    const UsedProducts = TemporaryUsed.map(obj =>
             <Product
                 key={obj.id}
                 name={obj.name}
                 price={obj.price}
                 img={obj.img}
-            />
-        )
-    })
+            />)
 
     function Toggle(status){
         setProds(status)
+        if (status === false){
+            document.getElementById('New').classList.add('Chosen')
+            document.getElementById('Used').classList.remove('Chosen')
+        } else if (status === true){
+            document.getElementById('New').classList.remove('Chosen')
+            document.getElementById('Used').classList.add('Chosen')
+        }
     }
 
     return(
-    <div>
-        <div class="Section">
-            <button class="Btn Chosen" onClick={Toggle(false)} id="New">New Products</button>
-            <button class="Btn" onClick={Toggle(true)} id="Used">Used Products</button>
+    <div id='Container'>
+        <div className="Section">
+            <button className="Btn Chosen" onClick={() => Toggle(false)} id="New">New Products</button>
+            <button className="Btn" onClick={() => Toggle(true)} id="Used">Used Products</button>
         </div>
 
         {prods ?
-            <div id="New-Products">
-                <NewProducts/>
+            <div id="Used-Products">
+                {UsedProducts}
             </div>
             :
-            <div id="Used-Products">
-                <UsedProducts/>
+            <div id="New-Products">
+                {NewProducts}
             </div>}
-    </div> )
+    </div>
+    )
 }

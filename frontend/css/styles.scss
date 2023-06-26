@@ -1,6 +1,7 @@
 * {
     margin: 0;
     color: white;
+    font-family: "Arimo", sans-serif;
 }
 
 undefined {
@@ -12,6 +13,7 @@ undefined {
 #root {
     width: 100vw !important;
     height: 100vh !important;
+    
 }
 
 html, body {
@@ -104,15 +106,21 @@ a {text-decoration: none;}
         }
     }
 
+    .cart-preview:hover {
+        overflow: scroll;
+    }
+
     .cart-preview {
         position: absolute; right: 0px;
         margin: 4px 4px 0 auto;
-        padding: 11px;
+        padding: 0 11px 0 11px;
         border-radius: 0 0 20px 20px;
         color: white;
         background-color: rgba(24, 34, 54, 1);
         width: 300px;
         box-shadow: 0 0 10px 0px rgba(0,0,0,1);
+        max-height: 500px;
+        overflow: hidden; 
 
         h2 {margin: 10px 0 0 0}
 
@@ -128,6 +136,7 @@ a {text-decoration: none;}
                 height: 70px;
                 display: inline;
                 border-radius: 4px;
+                object-fit: cover;
             }
 
             .info {
@@ -143,7 +152,7 @@ a {text-decoration: none;}
             }
 
             .trash {
-                height: 40px;
+                height: 32px;
                 cursor: pointer;
                 filter: invert(80%);
             }
@@ -165,6 +174,10 @@ a {text-decoration: none;}
             display: flex;
             align-items: center;
             justify-content: space-between;
+            position: sticky;
+            bottom: 0px;
+            z-index: 3;
+            background-color: rgba(24, 34, 54, 1);
         }
 
         .your-items {
@@ -176,13 +189,14 @@ a {text-decoration: none;}
 .frontpage {
     color: white;
     width: 94%;
-    margin: 40px auto;
+    padding: 40px 0;
+    margin: 0 auto;
 
     .sidescroll-main {
         display: flex;
         flex-direction: row;
         align-items: center;
-        margin: 20px;
+        margin: 20px auto;
         width: 100%;
         height: 180px;
         background-color: rgba(24, 34, 54, 1);
@@ -204,6 +218,7 @@ a {text-decoration: none;}
             img {
                 height: 100%;
                 width: 100%;
+                object-fit: cover;
             }
 
             .tag {
@@ -211,20 +226,20 @@ a {text-decoration: none;}
                 background-color: rgba(24, 34, 54, 1);
                 position: absolute;
                 white-space: nowrap;
-                user-select: none;
+                user-select: none;   
             }
 
             .nametag {
                 border-radius: 0 0 5px 0;
                 top: 0px;
-                padding: 0px 5px 1px 4px;
-                transform: translate(-1px, -2px);
+                padding: 0px 5px 3px 4px;
+                transform: translate(-1px, -1px);
             }
 
             .pricetag {
                 bottom: 0px;
                 right: 0px;
-                padding: 0 5px;
+                padding: 0 2px 0 5px;
                 border-radius: 5px 0 0 0;
                 transform: translateY(2px);
             }
@@ -240,14 +255,15 @@ a {text-decoration: none;}
     height: 100%;
     width: 100%;
     padding: 24px;
+    box-sizing:border-box;
 
     .profile {
         height: 240px;
         display: flex;
-        justify-content: space-between;
+        justify-content: start;
         
         .pfp-container {
-            margin: 0 0 0 50px;
+            margin: 0;
             height: 200px;
             width: 200px;
             background-color: black;
@@ -260,28 +276,42 @@ a {text-decoration: none;}
                 overflow: hidden;
             }    
 
+            //change pfp thing? idk
             img:hover {
-                //change pfp thing? idk
                 filter: blur(50%);
                 filter: brightness(30%);
             }
         }
 
         .text {
-            text-align: right;
-            margin: 0 50px 0 0;
+            text-align: left;
+            margin: 0 0 0 40px;
             display: flex;
             flex-direction: column;
+        }
+
+        .settings {
+            margin: 0 0 0 auto;
+            font-size: 18px;
+
+            .settingslink {
+                cursor: pointer;
+            }
+
+            .settingslink:hover {
+                text-decoration: underline;
+            }
         }
     }
 }
 
 .productcontainer {
 
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px 25px;
-    margin: 0 0 20px 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 200px);
+    justify-content: space-between;
+    margin: 0 auto 24px auto;
+    grid-gap: 20px 25px;
 
     .itemtile-main {
         padding-top: 3px;
@@ -302,23 +332,60 @@ a {text-decoration: none;}
             height: 180px;
 
             img {
-                object-fit: fill;
+                object-fit: cover;
                 width: 100%;
                 height: 100%;
             }
         }
-
-        .itemtile-main:hover {
-            filter: brightness(120%);
-        }
+    }
+    .itemtile-main:hover {
+        outline: 1px solid white;
     }
 }
+
+.pagebuttons {
+    display: flex;
+    flex-direction: row;
+    margin: 0 auto;
+    justify-content: center;
+
+    .pagebutton {
+        margin: 0 10px;
+        height: 40px;
+        width: 50px;
+        border-radius: 20px;
+        background-color: rgba(24, 34, 54, 1);
+        justify-content: space-around;
+        display: flex;
+
+        p {
+            align-self: center;
+            user-select: none;
+            pointer-events: none;
+        }
+    }
+
+    .pagebutton:hover {
+        cursor: pointer;
+        filter: brightness(125%)
+    }
+
+    .active {
+        filter: brightness(120%);
+    }
+}
+
+.searchcontainer {
+    h3, h2 {margin: 0 0 30px 0;}
+    padding: 30px;
+}
+
 
 .viiva { //lmao
     background-color: white;
     height: 1px;
     width: 100%;
-    margin: 0;
+    margin: 0 auto;
     border: 0;
 }
 

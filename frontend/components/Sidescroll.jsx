@@ -15,7 +15,7 @@ const Sidescroll = () => {
 
     //this feels stupid lol
     const scrollFunc = () => {
-        const element = document.querySelector('.sidescroll-main')
+        let element = document.querySelector('.sidescroll-main')
         interval = setInterval(() => {
             element.scrollLeft += distance
 
@@ -26,17 +26,17 @@ const Sidescroll = () => {
                 distance = -distance
             }
         }, 16) //a little over 60 times per second, (rip older pc's? idk.)
-        //this also breaks sometimes for some reason, going to fix later (probably)
     }
 
     const items = new Array(20).fill({name: "product", id: 100, img: '../../assets/oj.jpg', price: 5000})
 
-    useEffect(() => scrollFunc(), [])
+    useEffect(() => !interval && scrollFunc(), [])
 
     return (
-        <div className='sidescroll-main' 
+        <div className='sidescroll-main'
         onWheel={e => handleScroll(e)}
-        onmouseenter={() => clearInterval(interval)} 
+        onmouseover={() => clearInterval(interval)}
+        onmousemove={() => clearInterval(interval) /*very bad fix, but it works*/}
         onmouseleave={() => scrollFunc()}>
 
             {items.map(x => <SidescrollItem img={x.img} id={x.id} price={x.price} name={x.name}/>)}

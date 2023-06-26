@@ -3,7 +3,7 @@ import * as React from 'https://esm.sh/preact'
 
 
 const ItemInCart = ({ id, name, price, pic, setItems, items }) => {
-    const url = `/products/${id}`
+    const url = `/product/${id}`
 
     return (
         <div className="item-in-cart-preview" key={id}>
@@ -14,10 +14,10 @@ const ItemInCart = ({ id, name, price, pic, setItems, items }) => {
             </div>
             <img className='trash' 
             onClick={() => setItems(items.filter(y => y.id !== id))} 
-            src='../../assets/trashcan.svg' 
+            src='../../assets/trashcan.svg'
             alt='trash'>
             </img>
         </div>)
 }
-//<p className="trash" onClick={() => setItems(items.filter(y => y.id !== id))}> &#128465; </p>
+
 export default ItemInCart
