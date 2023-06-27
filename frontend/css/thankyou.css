@@ -1,0 +1,25 @@
+*{
+    margin:0;
+    padding:0;
+    color:white;
+    font-family:'Arimo', 'sans-serif';
+    text-align:center;
+    background-color: rgb(15, 21, 34);
+}
+
+body{
+    display:flex;
+    height:100vh;
+    justify-content:center;
+    align-items:center;
+}
+
+#thxMain{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    background:none;
+    height:auto;
+    width:auto;
+}

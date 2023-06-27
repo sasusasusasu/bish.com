@@ -1,17 +1,19 @@
-import Trashcan from '../assets/trashcan.svg'
+export default function Item(Props){
 
-export default function Item(){
+    function FormatNum(Num){
+        return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(Num)
+    }
 
     return(
         <div class="Item">
             <div class="Img">
-                <img class="Item-Image" src=""/>
+                <img class="Item-Image" src={Props.pic}/>
             </div>
             <div class="Item-Info">
-                <p class="Name">Test Item <span>249,98€</span></p>
-                <p class="Desc">Test Description of the Item. This item contains several hazardous materials, RUN!</p>
+                <p class="Name">{Props.name}<span>{FormatNum(Props.value)}</span></p>
+                <p class="Desc">{Props.desc}</p>
             </div>
-            <img class="Delete" src={Trashcan} title="Delete Item"/>
+            <img class="Delete" onClick={Props.delete} src="../../assets/trashcan.svg" title="Delete Item"/>
         </div>
     )
 }

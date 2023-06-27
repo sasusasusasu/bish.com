@@ -1,0 +1,142 @@
+* {
+    margin: 0;
+    padding: 0;
+    background-color: rgb(15, 21, 34);
+    font-family: "Arimo", sans-serif;
+  }
+  
+body {
+    width: 100vw;
+    height: 100vh;
+}
+@media (min-width: 768px) {
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+}
+  
+#Listing {
+    width: 100%;
+    height: auto;
+    background-color: rgb(24, 34, 54);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 10px;
+}
+@media (min-width: 768px) {
+    #Listing {
+        width: 500px;
+    }
+}
+  
+#Logo {
+    background: none;
+    height: 82px;
+}
+  
+h1 {
+    color: white;
+    background: none;
+}
+  
+p {
+    color: white;
+    background: none;
+    font-size: 20px;
+}
+  
+.txtinp {
+    color: white;
+    width: 95%;
+    height: 30px;
+    border-radius: 6px;
+    border-width: 1px;
+    border-color: rgb(35, 50, 80);
+    border-style: outset;
+    font-weight: 400;
+    padding: 2px;
+    letter-spacing: 1px;
+    font-size: 20px;
+}
+  
+.txtinp::-moz-placeholder {
+    color: rgb(163, 163, 163);
+}
+  
+.txtinp::placeholder {
+    color: rgb(163, 163, 163);
+}
+  
+.txtinp:focus {
+    border-color: rgb(12, 16, 26);
+}
+  
+.lbl {
+    background-color: rgb(35, 50, 80);
+}
+  
+textarea {
+    color: white;
+    width: 50%;
+    height: 100px;
+    padding: 2px;
+    border-radius: 10px;
+}
+  
+#Listing-Info {
+    width: 100%;
+    height: auto;
+    background: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+  
+#Product-Price {
+    color: white;
+    height: 30px;
+    font-size: 20px;
+    border-radius: 10px;
+}
+  
+button {
+    background-color: rgb(35, 50, 80);
+    color: white;
+    width: 50%;
+    height: 30px;
+    font-weight: 600;
+    font-size: 20px;
+    border-radius: 5px;
+    letter-spacing: 1px;
+    border-style: solid;
+    border-color: rgb(20, 30, 46);
+    border-width: 2px;
+}
+@media (min-width: 768px) {
+    button {
+        height: 30px;
+    }
+}
+  
+button:hover {
+    cursor: pointer;
+    background-color: rgb(45, 65, 105);
+}
+  
+.Info-Container {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 90%;
+    background-color: rgb(21, 29, 46);
+    padding: 5px;
+    border-radius: 6px;
+    gap: 10px;
+}
