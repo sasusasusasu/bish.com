@@ -1,3 +1,5 @@
+import * as React from 'https://esm.sh/preact'
+
 export default function Item(Props){
 
     function FormatNum(Num){
