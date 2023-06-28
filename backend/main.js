@@ -20,11 +20,10 @@ import * as oak from "https://deno.land/x/oak@v12.5.0/mod.ts";
 import mongodb from "npm:mongodb";
 
 import CachedTranspiler from "./transpiler.ts";
-import SessionPool from "./session.ts";
+import SessionPool from "./session.js";
 import Logger from "../common/logger.js";
 import * as Util from "./util.ts";
 import * as Safe from "./safe.ts";
-import * as Types from "./types.ts";
 import * as CryptoUtil from "../common/crypto_util.js";
 
 const DENO_DIR = path.dirname(path.fromFileUrl(Deno.mainModule));
@@ -53,7 +52,7 @@ const sessions = new SessionPool(SESSION_EXPIRE);
 logger.log("Starting from", DENO_DIR);
 
 // weird event flippy-floppy. I dislike async stuff a lot
-function interrupt(mdb: Types.DbClient, svr: Types.Server) {
+function interrupt(mdb, svr) {
 	console.log("");
 	tscache.write();
 	const closed = {
@@ -75,12 +74,12 @@ function interrupt(mdb: Types.DbClient, svr: Types.Server) {
 	svr.abortController.abort();
 }
 
-async function serveFileFrom(ctx: oak.Context, dir: string, file: string) {
+async function serveFileFrom(ctx, dir, file) {
 	loggerFile.log("Serving", file, "from", dir);
 	await oak.send(ctx, file, { root: dir });
 }
 
-async function serveFileRequest(ctx: oak.Context, next: oak.Next) {
+async function serveFileRequest(ctx, next) {
 	if (ctx.request.method !== "GET")
 		return next();
 	const prel = ctx.request.url.pathname;
@@ -105,20 +104,20 @@ async function serveFileRequest(ctx: oak.Context, next: oak.Next) {
 	return next();
 }
 
-async function main(mdb: Types.DbClient) {
+async function main(mdb) {
 	loggerNet.log("MongoDB connected to", MONGO_URI);
 	const dbBish = mdb.db("bishempty");
 	
-	const svr = <Types.Server>new oak.Application();
+	const svr = new oak.Application();
 	svr.abortController = new AbortController();
 	svr.keys = await CryptoUtil.HMAC.keyRingRaw("SHA-256", 5);
 
 	// add mongodb collections to context
 	svr.use((ctx, next) => {
-		(<Types.BishContext>ctx).users =
-			dbBish.collection<Types.UserEncrypted>("users");
-		(<Types.BishContext>ctx).products =
-			dbBish.collection<Types.Product>("products");
+		ctx.users =
+			dbBish.collection("users");
+		ctx.products =
+			dbBish.collection("products");
 		return next();
 	});
 	svr.use(router.routes());
@@ -151,20 +150,20 @@ async function main(mdb: Types.DbClient) {
 
 function listen() {
 	mongodb.MongoClient.connect(MONGO_URI)
-		.then((conn: Types.DbClient) => main(conn), (e: Error) => {
+		.then(conn => main(conn), e => {
 			loggerNet.error("MongoDB connection failed:", e.message);	
 			Deno.exit(1);
 		});
 }
 
-function serveJson(ctx: oak.Context, code: number, body: Types.JsObject) {
+function serveJson(ctx, code, body) {
 	ctx.response.type = "application/json";
 	ctx.response.status = code;
 	// error can be overridden in body
 	ctx.response.body = { error: false, ...body };
 }
 
-function serveError(ctx: oak.Context, code: number, msg: string) {
+function serveError(ctx, code, msg) {
 	loggerRoute.info("Serving HTTP error", code, msg);
 	serveJson(ctx, code, {
 		error: true,
@@ -172,7 +171,7 @@ function serveError(ctx: oak.Context, code: number, msg: string) {
 	});
 }
 
-async function tryGetBody(ctx: oak.Context) {
+async function tryGetBody(ctx) {
 	if (!ctx.request.hasBody) {
 		serveError(ctx, oak.Status.BadRequest, "No data");
 		return null;

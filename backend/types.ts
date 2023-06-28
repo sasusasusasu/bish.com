@@ -14,7 +14,7 @@ export type JsxServeContext = oak.RouterContext<`/${string}/:path`>;
 export enum SessionState {
 	INVALID = 0,
 	INIT,
-	INIT_TOKEN,
+	INIT_CHL,
 	AUTHORIZED
 }
 
@@ -35,7 +35,10 @@ export interface UserCommon {
 	name: string,
 	admin: boolean,
 	picture: WebImage,
-	listings: Array<Product>
+	listings: Array<Product>,
+	salt: Uint8Array,
+	rsaPublic: Uint8Array,
+	rsaPrivateWrapped: Uint8Array
 }
 
 // secure user data (encrypted). use this to store user data

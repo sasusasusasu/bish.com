@@ -142,26 +142,27 @@ export class PBKDF2 {
 	}
 }
 
-export class AESMessage {
-	static #sanitize(v, msg = false) {
-		if (v instanceof Uint8Array)
-			return v;
-		if (v instanceof Array || v instanceof ArrayBuffer)
-			return new Uint8Array(v);
-		if (msg && typeof(v) === "string")
-			return new TextEncoder().encode(v);
-		throw new TypeError("Argument must be a string or Uint8Array-like");
-	}
+function messageSanitize(v, msg = false) {
+	if (v instanceof Uint8Array)
+		return v;
+	if (v instanceof Array || v instanceof ArrayBuffer)
+		return new Uint8Array(v);
+	if (msg && typeof(v) === "string")
+		return new TextEncoder().encode(v);
+	throw new TypeError("Argument must be a string or Uint8Array-like");
+}
+
+export class Message {
 	/**
-	 * Create an AESMessage object from an exported object
+	 * Create a Message object from an exported object
 	 * @param {Record<string, unknown>} obj The object to import
 	 */
 	static import(obj) {
-		if (!obj.isAesMsgExport)
-			return new AESMessage(true, "Invalid message object");
+		if (!obj.isCryptoMsgExport)
+			return new Message(true, "Invalid message object");
 		if (obj.error)
-			return new AESMessage(obj.error, obj.errorMsg);
-		return new AESMessage(obj.error, unhex(obj.iv), unbase64(obj.message));
+			return new Message(obj.error, obj.errorMsg);
+		return new Message(obj.error, unbase64(obj.message));
 	}
 
 	constructor(error) {
@@ -169,11 +170,10 @@ export class AESMessage {
 		this.error = error;
 		if (this.error === true)
 			this.errorMsg = args[0];
-		else if (args.length > 1)
-			[this.iv, this.message, this.errorMsg] = [
-				AESMessage.#sanitize(args[0]),
-				AESMessage.#sanitize(args[1], true), "OK" ];
-		this.isAesMsg = true;
+		else if (args.length)
+			[this.message, this.errorMsg] = [messageSanitize(args[0], true), "OK" ];
+		this.isCryptoMsg = true;
+		this.messageType = "generic";
 	}
 
 	/**
@@ -195,7 +195,7 @@ export class AESMessage {
 		try {
 			return JSON.parse(this.decode());
 		} catch(e) {
-			console.warn("AESMessage.decodeObject:", e.message);
+			console.warn("Message.decodeObject:", e.message);
 			return null;
 		}
 	}
@@ -203,11 +203,6 @@ export class AESMessage {
 	/**
 	 * Return a hex string representing the initialization vector.
 	 */
-	ivHex() {
-		if (this.error)
-			return;
-		return hex(this.iv);
-	}
 
 	/**
 	 * Return a base64 string representing the message content.
@@ -219,16 +214,21 @@ export class AESMessage {
 	}
 
 	/**
-	 * Create an export of this AESMessage object
+	 * Create an export of this Message object
 	 */
 	export() {
-		return {
-			isAesMsgExport: true,
+		const base = {
+			isCryptoMsgExport: true,
+			messageType: "generic",
 			error: this.error,
-			errorMsg: this.errorMsg,
-			iv: hex(this.iv),
+			errorMsg: this.errorMsg
+		};
+		if (this.error)
+			return base;
+		return {
+			...base,
 			message: base64(this.message)
-		}
+		};
 	}
 
 	json() {
@@ -236,6 +236,67 @@ export class AESMessage {
 		if (c.error)
 			return JSON.stringify({error: c.error, errorMsg: c.errorMsg});
 		return JSON.stringify(c);
+	}
+}
+
+export class AESMessage extends Message {
+	static import(obj) {
+		if (obj.messageType !== "aes")
+			return new AESMessage(true, "Invalid message object");
+		if (obj.error)
+			return new AESMessage(obj.error, obj.errorMsg);
+		return new AESMessage(obj.error, unbase64(obj.message), unhex(obj.iv));
+	}
+
+	constructor(error) {
+		super(...arguments);
+		this.messageType = "aes";
+		if (error)
+			return this;
+		if (arguments.length < 3) {
+			this.error = true;
+			this.errorMsg = "Not enough arguments: IV missing";
+			return this;
+		}
+		this.iv = arguments[2];
+	}
+
+	export() {
+		const e = super.export();
+		e.messageType = "aes";
+		if (e.error)
+			return e;
+		e.iv = hex(this.iv);
+		return e;
+	}
+
+	hexIv() {
+		if (this.error)
+			return;
+		return hex(this.iv);
+	}
+}
+
+export class RSA_OAEP {
+	static #rsa(op, key, data, label = null) {
+		return crypto.subtle[op]({
+			name: "RSA-OAEP",
+			...((label === null) ? {} : { label: label })
+		}, key, data);
+	}
+
+	static async encrypt(pubkey, data, label = null) {
+		try {
+			var enc = await RSA_OAEP.#rsa("encrypt", pubkey, data, label);
+		} catch (e) { return new Message(true, e.message); }
+		return new Message(false, new Uint8Array(enc));
+	}
+
+	static async decrypt(privkey, data, label = null) {
+		try {
+			var dec = await RSA_OAEP.#rsa("decrypt", privkey, data, label);
+		} catch (e) { return new Message(true, e.message); }
+		return new Message(false, new Uint8Array(dec));
 	}
 }
 
@@ -261,7 +322,7 @@ export class AES_GCM {
 			var enc = await AES_GCM.#gcm(key, "encrypt",
 				init, msg, additional);
 		} catch(e) { return new AESMessage(true, e.message); }
-		return new AESMessage(false, init, new Uint8Array(enc));
+		return new AESMessage(false, new Uint8Array(enc), init);
 	}
 
 	/**
@@ -276,21 +337,21 @@ export class AES_GCM {
 			var dec = await AES_GCM.#gcm(key, "decrypt",
 				init, msg, additional);
 		} catch(e) { return new AESMessage(true, e.message); }
-		return new AESMessage(false, init, new Uint8Array(dec));
+		return new AESMessage(false, new Uint8Array(dec), init);
 	}
 
 	/**
 	 * Like AES_GCM.decrypt(), but take an AESMessage instead of Uint8Array
 	 * @param {CryptoKey} key AES key
-	 * @param {AESMessage | Object} msg Message
-	 * @param {boolean} msg.isAesMsgExport If true, msg is an exported AESMessage
+	 * @param {Message | Object} msg Message
+	 * @param {boolean} msg.isCryptoMsgExport If true, msg is an exported Message
 	 * @param {Uint8Array | null} additional Authentication data
 	 */
 	static async decryptMsg(key, msg, additional = null) {
-		if (!msg.isAesMsg && !msg.isAesMsgExport)
-			return new AESMessage(true, "Argument 1 was not an AESMessage");
-		const m = msg.isAesMsgExport ? unbase64(msg.message) : msg.message;
-		const iv = msg.isAesMsgExport ? unhex(msg.iv) : msg.iv;
+		if (!msg.messageType !== "aes")
+			return new AESMessage(true, "Argument 1 is not an AESMessage");
+		const m = msg.isCryptoMsgExport ? unbase64(msg.message) : msg.message;
+		const iv = msg.isCryptoMsgExport ? unhex(msg.iv) : msg.iv;
 		return await AES_GCM.decrypt(key, m, iv, additional);
 	}
 }
